@@ -19,14 +19,39 @@ void printString(char *string) {
   while (string[i]!='\0')
   {
     int AL = string[i];
-    int AH = 14; //using 
+    int AH = 14; //using 0xE
     int AX = AH*256 + AL;
     interrupt(16,AX,0,0,0); //using vector table 10h and using 0Eh
     i++;
   }
 }
 
-void
+void readString (char *string) {
+  int i = 0;
+  int AH;
+  int AL;
+  do
+  {
+    string[i] = interrupt(22,0,0,0,0);//interrut using 0x17 vector table and 0x0 AH or read string 
+    if(string[i]=='\b') 
+    {
+      printString("\b \b"); //delete single existing char before
+      if(i>0) {
+        i--; //if 1 arr of char deleted num of elmt --
+      }
+    }
+    else
+    {
+      //print on TTY
+      AL = string[i];
+      AH = 14;
+      int AX = 14*256 + AL;
+      interrupt(16,AX,0,0,0); //print thoose char
+      i++;
+    }
+  } while (string[i-1]!='\n'); //end read if enter key pressed
+  string[i-1] = '\0'; //set enter key value to null string
+}
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
   switch (AX) {
@@ -55,3 +80,4 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
       printString("Invalid interrupt");
   }
 }
+//hello
