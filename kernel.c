@@ -41,3 +41,17 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
       printString("Invalid interrupt");
   }
 }
+
+void printString(char *string){
+  int i=0;
+  int AX;
+  int Ah = 0xE*256;
+  int Al = string[i];
+
+  AX = Ah + Al;
+  
+  while(string[i]!="\0"){
+    interrupt(0x10, AX, 0 ,0, 0);
+    i++;
+  }
+}
