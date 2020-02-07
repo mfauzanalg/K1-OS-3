@@ -9,10 +9,24 @@ void clear(char *buffer, int length); //Fungsi untuk mengisi buffer dengan 0
 void writeFile(char *buffer, char *filename, int *sectors);
 void executeProgram(char *filename, int segment, int *success);
 
-int main() {
+int main(void) {
   makeInterrupt21();
   while (1);
 }
+
+void printString(char *string) {
+  int i = 0;
+  while (string[i]!='\0')
+  {
+    int AL = string[i];
+    int AH = 14; //using 
+    int AX = AH*256 + AL;
+    interrupt(16,AX,0,0,0); //using vector table 10h and using 0Eh
+    i++;
+  }
+}
+
+void
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
   switch (AX) {
