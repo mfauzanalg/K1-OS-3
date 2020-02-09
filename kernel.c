@@ -72,6 +72,23 @@ void readString (char *string) {
 }
 
 
+void readSector(char* buffer, int sector) 
+{
+  int AX,Ah,Al;
+  int BX;
+  int CX,Ch,Cl;
+  int DX;
+  Ah = 0x2;//funct to read 
+  Al = 0x01;//num of sector to read
+  AX = Ah*256 + Al;
+  BX = buffer; //sector to copy
+  Ch = div(sector,36);  //no cylinder in track contain 2 head with 18 sector each
+  Cl = mod(sector,18) + 1; //no sector in track (+1 cuz it cant be 0)
+  CX = Ch*256 + Cl;
+  DX = mod(div(sector,18),2) * 256; //head and drive
+  interrupt(0x13,AX,BX,CX,DX); //interrupt to read Specific Sector
+}
+
 
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
@@ -85,20 +102,20 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
     case 0x2:
       readSector(BX, CX);
       break;
-    case 0x3:
-      writeSector(BX, CX);
-      break;
-    case 0x4:
-      readFile(BX, CX, DX);
-      break;
-    case 0x5:
-      writeFile(BX, CX, DX);
-      break;
-    case 0x6:
-      executeProgram(BX, CX, DX);
-      break;
-    default:
-      printString("Invalid interrupt");
+  //   case 0x3:
+  //     writeSector(BX, CX);
+  //     break;
+  //   case 0x4:
+  //     readFile(BX, CX, DX);
+  //     break;
+  //   case 0x5:
+  //     writeFile(BX, CX, DX);
+  //     break;
+  //   case 0x6:
+  //     executeProgram(BX, CX, DX);
+  //     break;
+  //   default:
+  //     printString("Invalid interrupt");
   }
 }
 //hello
