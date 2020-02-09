@@ -30,6 +30,14 @@ int div (int a, int b) //a div b
   return div - 1;
 }
 
+void clear(char *buffer, int length)
+{
+  for (int i = 0; i < length; i++)
+  {
+    *(buffer+i) = 0;
+  }
+  
+} //Fungsi untuk mengisi buffer dengan 0
 
 void printString(char *string) {
   int i = 0;
