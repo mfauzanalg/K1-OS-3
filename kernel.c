@@ -1,4 +1,5 @@
 #include "interrupt.h"
+#include"divmod.h"
 
 int main(void) {
   char* string;
@@ -7,6 +8,28 @@ int main(void) {
   readString(string);
   while (1);
 }
+
+
+int mod(int a,int b) //a mod b
+{
+  int mod ;
+  mod = a;
+  while (mod >= b) {
+    mod-=b;
+  }
+  return mod;
+}
+
+int div (int a, int b) //a div b
+{
+  int div;
+  div  = 0;
+  while (div * b <= a) {
+    div++;
+  }
+  return div - 1;
+}
+
 
 void printString(char *string) {
   int i = 0;
@@ -47,6 +70,8 @@ void readString (char *string) {
   } while (string[i-1]!='\n'); //end read if enter key pressed
   string[i-1] = '\0'; //set enter key value to null string
 }
+
+
 
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
