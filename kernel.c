@@ -1,16 +1,10 @@
-/* Ini deklarasi fungsi */
-void handleInterrupt21 (int AX, int BX, int CX, int DX);
-void printString(char *string);
-void readString(char *string);
-void readSector(char *buffer, int sector);
-void writeSector(char *buffer, int sector);
-void readFile(char *buffer, char *filename, int *success);
-void clear(char *buffer, int length); //Fungsi untuk mengisi buffer dengan 0
-void writeFile(char *buffer, char *filename, int *sectors);
-void executeProgram(char *filename, int segment, int *success);
+#include "interrupt.h"
 
 int main(void) {
+  char* string;
   makeInterrupt21();
+  printString("WOWOWOWOWOWOWO MYSQL RIBET  TYPE SOME STRING PLEASE\n");
+  readString(string);
   while (1);
 }
 
@@ -30,6 +24,7 @@ void readString (char *string) {
   int i = 0;
   int AH;
   int AL;
+  int AX;
   do
   {
     string[i] = interrupt(22,0,0,0,0);//interrut using 0x17 vector table and 0x0 AH or read string 
@@ -44,14 +39,15 @@ void readString (char *string) {
     {
       //print on TTY
       AL = string[i];
-      AH = 14;
-      int AX = 14*256 + AL;
+      AH = 0xE;
+      AX  = AH*256 + AL;
       interrupt(16,AX,0,0,0); //print thoose char
       i++;
     }
   } while (string[i-1]!='\n'); //end read if enter key pressed
   string[i-1] = '\0'; //set enter key value to null string
 }
+
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
   switch (AX) {
