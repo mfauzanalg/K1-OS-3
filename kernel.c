@@ -1,10 +1,20 @@
 #include "interrupt.h"
 #include"divmod.h"
 
+void handleInterrupt21 (int AX, int BX, int CX, int DX);
+void printString(char *string);
+void readString(char *string);
+void readSector(char *buffer, int sector);
+void writeSector(char *buffer, int sector);
+void readFile(char *buffer, char *filename, int *success);
+void clear(char *buffer, int length); //Fungsi untuk mengisi buffer dengan 0
+void writeFile(char *buffer, char *filename, int *sectors);
+void executeProgram(char *filename, int segment, int *success);
+
 int main(void) {
   char* string;
   makeInterrupt21();
-  printString("WOWOWOWOWOWOWO MYSQL RIBET  TYPE SOME STRING PLEASE\n");
+  printString("MYSQL RIBET  TYPE SOME STRING PLEASE\n");
   readString(string);
   while (1);
 }
@@ -114,6 +124,8 @@ void writeSector(char* buffer, int sector)
   interrupt(0x13,AX,BX,CX,DX); //interrupt to read Specific Sector
 }
 
+void readFile(char *buffer, char *filename, int *success);
+void clear(char *buffer, int length); //Fungsi untuk mengisi buffer dengan 0
 
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
