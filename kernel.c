@@ -1,6 +1,7 @@
 #include "interrupt.h"
 #include"divmod.h"
 
+// Defenisi Fungsi
 void handleInterrupt21 (int AX, int BX, int CX, int DX);
 void printString(char *string);
 void readString(char *string);
@@ -11,6 +12,10 @@ void clear(char *buffer, int length); //Fungsi untuk mengisi buffer dengan 0
 void writeFile(char *buffer, char *filename, int *sectors);
 void executeProgram(char *filename, int segment, int *success);
 
+// Funsgi Tambahan
+int mod(int a,int b);
+int div (int a, int b);
+
 int main(void) {
   char* string;
   makeInterrupt21();
@@ -19,35 +24,34 @@ int main(void) {
   while (1);
 }
 
-
-int mod(int a,int b) //a mod b
-{
-  int mod;
-  mod = a;
-  while (mod >= b) {
-    mod-=b;
+void handleInterrupt21 (int AX, int BX, int CX, int DX){
+  switch (AX) {
+    case 0x0:
+      printString(BX);
+      break;
+    case 0x1:
+      readString(BX);
+      break;
+    case 0x2:
+      readSector(BX, CX);
+      break;
+    case 0x3:
+      writeSector(BX, CX);
+      break;
+    case 0x4:
+      readFile(BX, CX, DX);
+      break;
+    case 0x5:
+      writeFile(BX, CX, DX);
+      break;
+    case 0x6:
+      executeProgram(BX, CX, DX);
+      break;
+    default:
+      printString("Invalid interrupt");
   }
-  return mod;
 }
 
-int div (int a, int b) //a div b
-{
-  int div;
-  div  = 0;
-  while (div * b <= a) {
-    div++;
-  }
-  return div - 1;
-}
-
-void clear(char *buffer, int length)
-{
-  for (int i = 0; i < length; i++)
-  {
-    *(buffer+i) = 0;
-  }
-  
-} //Fungsi untuk mengisi buffer dengan 0
 
 void printString(char *string) {
   int i = 0;
@@ -60,6 +64,7 @@ void printString(char *string) {
     i++;
   }
 }
+
 
 void readString (char *string) {
   int i = 0;
@@ -89,6 +94,27 @@ void readString (char *string) {
   string[i-1] = '\0'; //set enter key value to null string
 }
 
+
+int mod(int a,int b) //a mod b
+{
+  int mod;
+  mod = a;
+  while (mod >= b) {
+    mod-=b;
+  }
+  return mod;
+}
+
+
+int div (int a, int b) //a div b
+{
+  int div;
+  div  = 0;
+  while (div * b <= a) {
+    div++;
+  }
+  return div - 1;
+}
 
 void readSector(char* buffer, int sector) 
 {
@@ -124,13 +150,15 @@ void writeSector(char* buffer, int sector)
   interrupt(0x13,AX,BX,CX,DX); //interrupt to read Specific Sector
 }
 
+
 void readFile(char *buffer, char *filename, int *success){ //sukses bernilai selain 0
 
 }
 
 void clear(char *buffer, int length){
-  for (int i = 0; i < length; i++){
-    buffer[i] = 0x00;
+  int i;
+  for (i = 0; i < length; i++){
+    *(buffer+i) = 0;
   }
 }
 
@@ -138,10 +166,17 @@ void writeFile(char *buffer, char *filename, int *sectors){
 
 }
 
+
+// File system
+// terdiri dari 2 sektor khusus
+// 1. sektor map -> 512 byte
+// 2. sektor dir -> 16 baris 32 byte (12 byte pertama itu filename, 20 byte terakhir sektor2 di file)
+// Jadi ukurannya berapa?
+
 void executeProgram(char *filename, int segment, int *success){
   char buffer[/*ukuran sesuai file system*/];
   readFile(&*buffer, &*filename, &*success);
-  if(*success == 1){
+  if(*success == 1){ //tergantung defenisi sukses di readFile
     for(int i = 0; i < /*ukuran sesuai file system*/; i++){
       putInMemory(segment, i, buffer[i]);
     }
@@ -150,30 +185,3 @@ void executeProgram(char *filename, int segment, int *success){
 }
 
 
-void handleInterrupt21 (int AX, int BX, int CX, int DX){
-  switch (AX) {
-    case 0x0:
-      printString(BX);
-      break;
-    case 0x1:
-      readString(BX);
-      break;
-    case 0x2:
-      readSector(BX, CX);
-      break;
-    case 0x3:
-      writeSector(BX, CX);
-      break;
-    case 0x4:
-      readFile(BX, CX, DX);
-      break;
-    case 0x5:
-      writeFile(BX, CX, DX);
-      break;
-    case 0x6:
-      executeProgram(BX, CX, DX);
-      break;
-    default:
-      printString("Invalid interrupt");
-  }
-}
