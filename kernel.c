@@ -124,8 +124,16 @@ void writeSector(char* buffer, int sector)
   interrupt(0x13,AX,BX,CX,DX); //interrupt to read Specific Sector
 }
 
-void readFile(char *buffer, char *filename, int *success);
-void clear(char *buffer, int length); //Fungsi untuk mengisi buffer dengan 0
+void readFile(char *buffer, char *filename, int *success){
+  
+}
+
+
+void clear(char *buffer, int length){
+  for (int i = 0; i < length; i++){
+    buffer[i] = 0x00;
+  }
+}
 
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
@@ -155,4 +163,3 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
   //     printString("Invalid interrupt");
   }
 }
-//hello
