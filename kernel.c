@@ -22,7 +22,7 @@ int main(void) {
 
 int mod(int a,int b) //a mod b
 {
-  int mod ;
+  int mod;
   mod = a;
   while (mod >= b) {
     mod-=b;
@@ -124,14 +124,28 @@ void writeSector(char* buffer, int sector)
   interrupt(0x13,AX,BX,CX,DX); //interrupt to read Specific Sector
 }
 
-void readFile(char *buffer, char *filename, int *success){
-  
-}
+void readFile(char *buffer, char *filename, int *success){ //sukses bernilai selain 0
 
+}
 
 void clear(char *buffer, int length){
   for (int i = 0; i < length; i++){
     buffer[i] = 0x00;
+  }
+}
+
+void writeFile(char *buffer, char *filename, int *sectors){
+
+}
+
+void executeProgram(char *filename, int segment, int *success){
+  char buffer[/*ukuran sesuai file system*/];
+  readFile(&*buffer, &*filename, &*success);
+  if(*success == 1){
+    for(int i = 0; i < /*ukuran sesuai file system*/; i++){
+      putInMemory(segment, i, buffer[i]);
+    }
+    launcProgram(segment);
   }
 }
 
@@ -150,16 +164,16 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
     case 0x3:
       writeSector(BX, CX);
       break;
-  //   case 0x4:
-  //     readFile(BX, CX, DX);
-  //     break;
-  //   case 0x5:
-  //     writeFile(BX, CX, DX);
-  //     break;
-  //   case 0x6:
-  //     executeProgram(BX, CX, DX);
-  //     break;
-  //   default:
-  //     printString("Invalid interrupt");
+    case 0x4:
+      readFile(BX, CX, DX);
+      break;
+    case 0x5:
+      writeFile(BX, CX, DX);
+      break;
+    case 0x6:
+      executeProgram(BX, CX, DX);
+      break;
+    default:
+      printString("Invalid interrupt");
   }
 }
