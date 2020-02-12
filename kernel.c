@@ -15,6 +15,7 @@ void executeProgram(char *filename, int segment, int *success);
 // Funsgi Tambahan
 int mod(int a,int b);
 int div (int a, int b);
+void bootlogo();
 
 int main(void) {
   char* string;
@@ -22,6 +23,17 @@ int main(void) {
   printString("MYSQL RIBET  TYPE SOME STRING PLEASE\n");
   readString(string);
   while (1);
+}
+
+void bootlogo(){
+    printString(" __  __        _____  ____  _        _____  _ _          _\n");   
+    printString("|  \\/  |      / ____|/ __ \\| |      |  __ \\(_) |        | |\n");  
+    printString("| \\  / |_   _| (___ | |  | | |      | |__) |_| |__   ___| |_\n"); 
+    printString("| |\\/| | | | |\\___ \\| |  | | |      |  _  /| | '_ \\ / _ \\ __|\n");
+    printString("| |  | | |_| |____) | |__| | |____  | | \\ \\| | |_) |  __/ |_\n"); 
+    printString("|_|  |_|\\__, |_____/ \\___\\_\\______| |_|  \\_\\_|_.__/ \\___|\\__|\n");
+    printString("         __/ |\n");                                               
+    printString("        |___/\n");   
 }
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
@@ -151,7 +163,7 @@ void writeSector(char* buffer, int sector)
 }
 
 
-void readFile(char *buffer, char *filename, int *success){ //sukses bernilai selain 0
+void readFile(char *buffer, char *filename, int *success){ //sukses bernilai 1
 
 }
 
