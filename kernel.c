@@ -8,11 +8,9 @@ void bootlogo();
 
 int main(void) {
   char* string;
-  int succes = 1;
-  char buffer[512*20];
-  readFile(&buffer,"test.txt",&succes);
   bootlogo();
   makeInterrupt21();
+
   readString(string);
   while (1);
 }
@@ -36,21 +34,21 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
     case 0x1:
       readString(BX);
       break;
-    // case 0x2:
-    //   readSector(BX, CX);
-    //   break;
-    // case 0x3:
-    //   writeSector(BX, CX);
-    //   break;
-    // case 0x4:
-    //   readFile(BX, CX, DX);
-    //   break;
-    // case 0x5:
-    //   writeFile(BX, CX, DX);
-    //   break;
-    // case 0x6:
-    //   executeProgram(BX, CX, DX);
-    //   break;
+    case 0x2:
+      readSector(BX, CX);
+      break;
+    case 0x3:
+      writeSector(BX, CX);
+      break;
+    case 0x4:
+      readFile(BX, CX, DX);
+      break;
+    case 0x5:
+      writeFile(BX, CX, DX);
+      break;
+    case 0x6:
+      executeProgram(BX, CX, DX);
+      break;
     default:
       printString("Invalid interrupt");
   }
@@ -230,7 +228,7 @@ void writeFile(char *buffer, char *filename, int *sectors) {
   readSector(dir,2);
 
   //find some empty dir 
-  for (int  idx = 0; idx < 16; ++idx)
+  for (idx = 0; idx < 16; ++idx)
   {
     if (dir[idx*32] == '\0') 
     {
@@ -314,15 +312,15 @@ void writeFile(char *buffer, char *filename, int *sectors) {
 
 
 void executeProgram(char *filename, int segment, int *success){
-  int maxSectorSize = 512*20;
-  char buffer[maxSectorSize];
+  char buffer[10240];
+  int i;
   readFile(&*buffer, &*filename, &*success);
-  if(*success){
-    for(int i = 0; i < maxSectorSize; i++){
+  if(*success)
+  {
+    for(i = 0; i < 10240; i++)
+    {
       putInMemory(segment, i, buffer[i]);
     }
     launcProgram(segment);
   }
 }
-
-
