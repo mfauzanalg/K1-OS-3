@@ -8,6 +8,9 @@ void bootlogo();
 
 int main(void) {
   char* string;
+  int succes = 1;
+  char buffer[512*20];
+  readFile(&buffer,"test.txt",&succes);
   bootlogo();
   makeInterrupt21();
   readString(string);
@@ -125,13 +128,14 @@ void readSector(char* buffer, int sector)
   int DX;
   Ah = 0x2;//funct to read 
   Al = 0x01;//num of sector to read
-  AX = Ah*256 + Al;
+  AX = Ah<<2 +   Al;
   BX = buffer; //sector to copy
   Ch = div(sector,36);  //no cylinder in track contain 2 head with 18 sector each
   Cl = mod(sector,18) + 1; //no sector in track (+1 cuz it cant be 0)
-  CX = Ch*256 + Cl;
-  DX = mod(div(sector,18),2) * 256; //head and drive
+  CX = Ch*0x100 + Cl;
+  DX = mod(div(sector,18),2) * 0x100; //head and drive
   interrupt(0x13,AX,BX,CX,DX); //interrupt to read Specific Sector
+  interrupt(33, 0, BX, 0, 0);
 }
 
 void writeSector(char* buffer, int sector) 
@@ -157,6 +161,155 @@ void clear(char *buffer, int length){
   for (i = 0; i < length; i++){
     *(buffer+i) = 0;
   }
+}
+
+void readFile(char *buffer, char *filename, int *success) {
+  int isFound;
+  int isMatch;
+  int sectorNo; 
+  int numSectors;
+  int i;// file
+  int j;// name
+  
+  isFound = 0;
+  i = 0;
+  //*Load directory sector into 512-byte char array
+  //Disk directory sits at sector 2
+  clear(buffer,512);
+  readSector(buffer, 2);
+  //Try to match file name. If not found, return
+  while (!isFound && i<16)
+  {
+     isMatch = 1;
+     j = 0;
+     while (j < 12 && filename[j]!='\0')
+     {
+        if (filename[j] != buffer[j+(32*i)]) {
+         !isMatch;
+         break;
+        }
+        j = j+1;
+     }
+     if (isMatch) 
+     {
+       isFound = 1;
+     }
+     else 
+     {
+       i = i+1;
+     }
+  }
+  if (!isFound) {
+   *success = 0;
+   return;
+  }
+  i=(i*32)+12;
+  j = 0;
+  numSectors = 0;
+  for (j = 0; j < 20; i++,j++)
+  {
+    if (buffer[i+j] == '\0') {
+      break;
+    }
+    else
+    {
+      readSector(buffer + j*512,buffer[i+j]);
+    }
+  }
+  *success = 1;
+  
+}
+
+void writeFile(char *buffer, char *filename, int *sectors) {
+  char map[512];
+  char dir[512];
+  char secBuff[512];
+  int idx;
+
+  readSector(map,1);
+  readSector(dir,2);
+
+  //find some empty dir 
+  for (int  idx = 0; idx < 16; ++idx)
+  {
+    if (dir[idx*32] == '\0') 
+    {
+      break;
+    }
+  }
+
+  if (idx<16) 
+  {
+    int space = 0;
+    int i = 0;
+    int j;
+    //find space available
+    while (i<256 && space < *sectors)
+    {
+      if (map[i] == 0)
+      {
+        space++;
+      }
+      i++;
+    }
+    //if there is no space
+    if (space < *sectors)
+    {
+       *sectors = 0;
+       return;
+    }
+    //if there is a space
+    else
+    {
+      //clear file sector
+      clear(dir+idx*32,32);
+      i = 0;
+      while (i<12)
+      {
+        //if not null string
+        if (filename[i] != '\0')
+        {
+          dir[idx*32+i] = filename[i];
+        }
+        //case end name
+        else
+        {
+          break;
+        }
+        i++;
+      }
+      i = 0;
+      space = 0;
+      //find space at map
+      while(i<255 && space < *sectors)
+      {
+        if(map[i] = 0)
+        {
+          map[i] = 0xFF;//sign its used to store data
+          dir[idx*32+12+space] = i;
+          //clear dir
+          clear(secBuff,512);
+          j = 0;
+          while (j<512)
+          {
+            secBuff[j] = buffer[space*512+j];
+            j++;
+          }
+          //write sectors
+          writeSector(secBuff,i);
+          space++;
+        }
+        i++;
+      }
+    }    
+  }
+  else
+  {
+    *sectors = 0;
+  }
+  
+  writeSector(map,1);
+  writeSector(dir,2);
 }
 
 
