@@ -313,22 +313,16 @@ void writeFile(char *buffer, char *filename, int *sectors) {
 }
 
 
-
-// File system
-// terdiri dari 2 sektor khusus
-// 1. sektor map -> 512 byte
-// 2. sektor dir -> 16 baris 32 byte (12 byte pertama itu filename, 20 byte terakhir sektor2 di file)
-// Jadi ukurannya berapa?
-
-// void executeProgram(char *filename, int segment, int *success){
-//   char buffer[2880];
-//   readFile(&*buffer, &*filename, &*success);
-//   if(*success == 1){ //tergantung defenisi sukses di readFile
-//     for(int i = 0; i < 2880; i++){
-//       putInMemory(segment, i, buffer[i]);
-//     }
-//     launcProgram(segment);
-//   }
-// }
+void executeProgram(char *filename, int segment, int *success){
+  int maxSectorSize = 512*20;
+  char buffer[maxSectorSize];
+  readFile(&*buffer, &*filename, &*success);
+  if(*success){
+    for(int i = 0; i < maxSectorSize; i++){
+      putInMemory(segment, i, buffer[i]);
+    }
+    launcProgram(segment);
+  }
+}
 
 
