@@ -7,12 +7,22 @@ int div (int a, int b);
 void bootlogo();
 
 int main(void) {
-  char* string;
-  bootlogo();
+  int suc;
+  char buffer[10240];
   makeInterrupt21();
-
-  readString(string);
-  while (1);
+  bootlogo();
+  
+  interrupt(0x21, 0x4, buffer, "key.txt", &suc);
+  if (suc)
+  {
+    interrupt(0x21,0x0, "Key : ", 0, 0);
+    interrupt(0x21,0x0, buffer, 0, 0);
+  }
+  else
+  {
+    interrupt(0x21, 0x6, "keyproc", 0x2000, &suc);
+  }
+  while (1){}
 }
 
 void bootlogo(){
@@ -314,13 +324,13 @@ void writeFile(char *buffer, char *filename, int *sectors) {
 void executeProgram(char *filename, int segment, int *success){
   char buffer[10240];
   int i;
-  readFile(&*buffer, &*filename, &*success);
+  readFile(buffer, filename, success);
   if(*success)
   {
     for(i = 0; i < 10240; i++)
     {
       putInMemory(segment, i, buffer[i]);
     }
-    launcProgram(segment);
+    launchProgram(segment);
   }
 }
