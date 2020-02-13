@@ -15,14 +15,16 @@ int main(void) {
   interrupt(0x21, 0x4, buffer, "key.txt", &suc);
   if (suc)
   {
+    printString("yoloooo\r\n");
     interrupt(0x21,0x0, "Key : ", 0, 0);
     interrupt(0x21,0x0, buffer, 0, 0);
   }
   else
   {
-    interrupt(0x21, 0x6, "keyproc", 0x2000, &suc);
+    printString("yoloooo1234\r\n");
+    interrupt(0x21, 0x6, "milestone1", 0x2000, &suc);
   }
-  while (1){}
+  while (1);
 }
 
 void bootlogo(){
