@@ -7,7 +7,7 @@ int div (int a, int b);
 void bootlogo();
 
 int main(void) {
-  int suc;
+  int suc = 0;
   char buffer[10240];
   makeInterrupt21();
   bootlogo();
@@ -15,7 +15,7 @@ int main(void) {
   interrupt(0x21, 0x4, buffer, "key.txt", &suc);
   if (suc)
   {
-    printString("yoloooo\r\n");
+    printString("yoloooo13333333\r\n");
     interrupt(0x21,0x0, "Key : ", 0, 0);
     interrupt(0x21,0x0, buffer, 0, 0);
   }
@@ -132,37 +132,12 @@ int div (int a, int b) //a div b
 
 void readSector(char* buffer, int sector) 
 {
-  int AX,Ah,Al;
-  int BX;
-  int CX,Ch,Cl;
-  int DX;
-  Ah = 0x2;//funct to read 
-  Al = 0x01;//num of sector to read
-  AX = Ah<<2 +   Al;
-  BX = buffer; //sector to copy
-  Ch = div(sector,36);  //no cylinder in track contain 2 head with 18 sector each
-  Cl = mod(sector,18) + 1; //no sector in track (+1 cuz it cant be 0)
-  CX = Ch*0x100 + Cl;
-  DX = mod(div(sector,18),2) * 0x100; //head and drive
-  interrupt(0x13,AX,BX,CX,DX); //interrupt to read Specific Sector
-  interrupt(33, 0, BX, 0, 0);
+  interrupt(0x13, 0x201, buffer, div(sector, 36) * 0x100 + mod(sector, 18) + 1, mod(div(sector, 18), 2) * 0x100);
 }
 
 void writeSector(char* buffer, int sector) 
 {
-  int AX,Ah,Al;
-  int BX;
-  int CX,Ch,Cl;
-  int DX;
-  Ah = 0x3;//funct to write 
-  Al = 0x01;//num of sector to read
-  AX = Ah*256 + Al;
-  BX = buffer; //sector to copy
-  Ch = div(sector,36);  //no cylinder in track contain 2 head with 18 sector each
-  Cl = mod(sector,18) + 1; //no sector in track (+1 cuz it cant be 0)
-  CX = Ch*256 + Cl;
-  DX = mod(div(sector,18),2) * 256; //head and drive
-  interrupt(0x13,AX,BX,CX,DX); //interrupt to read Specific Sector
+  interrupt(0x13, 0x301, buffer, div(sector, 36) * 0x100 + mod(sector, 18) + 1, mod(div(sector, 18), 2) * 0x100);
 }
 
 
@@ -173,61 +148,65 @@ void clear(char *buffer, int length){
   }
 }
 
-void readFile(char *buffer, char *filename, int *success) {
-  int isFound;
-  int isMatch;
-  int sectorNo; 
-  int numSectors;
-  int i;// file
-  int j;// name
-  
-  isFound = 0;
-  i = 0;
-  //*Load directory sector into 512-byte char array
-  //Disk directory sits at sector 2
-  clear(buffer,512);
-  readSector(buffer, 2);
-  //Try to match file name. If not found, return
-  while (!isFound && i<16)
+void readFile(char *buffer, char *filename, int *success)
+{
+  char dir[512];
+  int iterDir = 0;
+  int iterFileName;
+  char ketemu = 0;
+  char sama;
+  int iterLastByte, i;
+  //Isi dir dengan list of semua filename
+  readSector(dir, 2);
+  //Traversal dir
+  for (iterDir = 0; iterDir < 512; iterDir += 32)
   {
-     isMatch = 1;
-     j = 0;
-     while (j < 12 && filename[j]!='\0')
-     {
-        if (filename[j] != buffer[j+(32*i)]) {
-         !isMatch;
-         break;
+    sama = 1;
+    for (iterFileName = 0; iterFileName < 12; iterFileName++)
+    {
+      if (filename[iterFileName] == '\0')
+      {
+        break;
+      }
+      else
+      {
+        if (filename[iterFileName] != dir[iterDir + iterFileName])
+        {
+          sama = 0;
+          break;
         }
-        j = j+1;
-     }
-     if (isMatch) 
-     {
-       isFound = 1;
-     }
-     else 
-     {
-       i = i+1;
-     }
-  }
-  if (!isFound) {
-   *success = 0;
-   return;
-  }
-  i=(i*32)+12;
-  j = 0;
-  numSectors = 0;
-  for (j = 0; j < 20; i++,j++)
-  {
-    if (buffer[i+j] == '\0') {
+      }
+    }
+    if (sama)
+    {
+      ketemu = 1;
       break;
     }
-    else
-    {
-      readSector(buffer + j*512,buffer[i+j]);
-    }
   }
-  *success = 1;
-  
+  //Cek apakah sudah ketemu
+  if (!ketemu)
+  {
+    *success = 0;
+    return;
+  }
+  else
+  {
+    //Traversal 20 byte terakhir dari dir[iterDir] - dir[iterDir+32]
+    iterLastByte = iterDir + 12;
+    for (i = 0; i < 20; i++)
+    {
+      if (dir[iterLastByte + i] == 0)
+      {
+        break;
+      }
+      else
+      {
+        readSector(buffer + i * 512, dir[iterLastByte + i]);
+      }
+    }
+    *success = 1;
+    return;
+  }
 }
 
 void writeFile(char *buffer, char *filename, int *sectors) {
