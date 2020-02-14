@@ -7,24 +7,37 @@ int div (int a, int b);
 void bootlogo();
 
 int main(void) {
-  int suc = 0;
+  
+  char input[10];int suc;
   char buffer[10240];
   makeInterrupt21();
   bootlogo();
   
-  interrupt(0x21, 0x4, buffer, "key.txt", &suc);
-  if (suc)
-  {
-    printString("yoloooo13333333\r\n");
-    interrupt(0x21,0x0, "Key : ", 0, 0);
-    interrupt(0x21,0x0, buffer, 0, 0);
+  while(1) {
+    printString("\r\nSystem Input : \r\n");
+    printString("1. Run Default \r\n");
+    printString("2. Run App  \r\n");
+
+    interrupt(0x21,0x1,input,0,0);
+    switch(input[0])
+    {
+      case '1' : 
+        interrupt(0x21, 0x4, buffer, "key.txt", &suc);
+        if (suc)
+        {
+          interrupt(0x21,0x0, "Key : ", 0, 0);
+          interrupt(0x21,0x0, buffer, 0, 0);
+        }
+        else
+        {
+          interrupt(0x21, 0x6, "milestone1", 0x2000, &suc);
+        }
+        break;
+      case '2' :
+        interrupt(0x21, 0x6, "file", 0x2000, &suc);
+        break;
+    }
   }
-  else
-  {
-    printString("yoloooo1234\r\n");
-    interrupt(0x21, 0x6, "milestone1", 0x2000, &suc);
-  }
-  while (1);
 }
 
 void bootlogo(){

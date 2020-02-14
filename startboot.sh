@@ -7,5 +7,8 @@ dd if=kernel of=system.img bs=512 conv=notrunc seek=3
 
 gcc loadFile.c -o loadFile
 ./loadFile milestone1	
-
+bcc -ansi -c -o file.o file.c
+nasm -f as86 lib.asm -o lib_asm.o
+ld86 -o file -d file.o lib_asm.o
+./loadFile file
 echo c | bochs -f if2230.config
