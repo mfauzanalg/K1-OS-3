@@ -148,65 +148,54 @@ void clear(char *buffer, int length){
   }
 }
 
-void readFile(char *buffer, char *filename, int *success)
-{
-	char dir[512];
-	int iterDir = 0;
-	int iterFileName;
-	char ketemu = 0;
-	char sama;
-	int iterLastByte, i;
-	//Isi dir dengan list of semua filename
-	readSector(dir, 2);
-	//Traversal dir
-	for (iterDir = 0; iterDir < 512; iterDir += 32)
-	{
-		sama = 1;
-		for (iterFileName = 0; iterFileName < 12; iterFileName++)
-		{
-			if (filename[iterFileName] == '\0')
-			{
-				break;
-			}
-			else
-			{
-				if (filename[iterFileName] != dir[iterDir + iterFileName])
-				{
-					sama = 0;
-					break;
-				}
-			}
-		}
-		if (sama)
-		{
-			ketemu = 1;
-			break;
-		}
-	}
-	//Cek apakah sudah ketemu
-	if (!ketemu)
-	{
-		*success = 0;
-		return;
-	}
-	else
-	{
-		//Traversal 20 byte terakhir dari dir[iterDir] - dir[iterDir+32]
-		iterLastByte = iterDir + 12;
-		for (i = 0; i < 20; i++)
-		{
-			if (dir[iterLastByte + i] == 0)
-			{
-				break;
-			}
-			else
-			{
-				readSector(buffer + i * 512, dir[iterLastByte + i]);
-			}
-		}
-		*success = 1;
-		return;
-	}
+void readFile(char *buffer, char *filename, int *success) {
+  int isFound;
+  int isMatch;
+  int sectorNo; 
+  int numSectors;
+  char dir [512];
+  int i;// file
+  int j;// name
+  
+  isFound = 0;
+  i = 0;
+  //*Load directory sector into 512-byte char array
+  //Disk directory sits at sector 2
+  readSector(dir, 2);
+  //Try to match file name. If not found, return
+  while (!isFound && i<16)
+  {
+     isMatch = 1;
+     j = 0;
+     while (j < 12 && filename[j]!='\0')
+     {
+        if (filename[j] != dir[j+(32*i)]) {
+         isMatch = 0;
+         break;
+        }
+        j = j+1;
+     }
+     if (isMatch) 
+     {
+       isFound = 1;
+     }
+     else 
+     {
+       i = i+1;
+     }
+  }
+  if (!isFound) {
+   *success = 0;
+   return;
+  }
+  i=(i*32)+12;
+  j = 0;
+  numSectors = 0;
+  while(j<20 && dir[i+j]!='\0') {
+    readSector(buffer+j*512,dir[i+j]);
+    j++;
+  }
+  *success = 1;
 }
 
 void writeFile(char *buffer, char *filename, int *sectors) {

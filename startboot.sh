@@ -8,4 +8,4 @@ dd if=kernel of=system.img bs=512 conv=notrunc seek=3
 gcc loadFile.c -o loadFile
 ./loadFile milestone1	
 
-bochs -f if2230.config
+echo c | bochs -f if2230.config
