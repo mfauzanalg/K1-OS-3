@@ -150,63 +150,63 @@ void clear(char *buffer, int length){
 
 void readFile(char *buffer, char *filename, int *success)
 {
-  char dir[512];
-  int iterDir = 0;
-  int iterFileName;
-  char ketemu = 0;
-  char sama;
-  int iterLastByte, i;
-  //Isi dir dengan list of semua filename
-  readSector(dir, 2);
-  //Traversal dir
-  for (iterDir = 0; iterDir < 512; iterDir += 32)
-  {
-    sama = 1;
-    for (iterFileName = 0; iterFileName < 12; iterFileName++)
-    {
-      if (filename[iterFileName] == '\0')
-      {
-        break;
-      }
-      else
-      {
-        if (filename[iterFileName] != dir[iterDir + iterFileName])
-        {
-          sama = 0;
-          break;
-        }
-      }
-    }
-    if (sama)
-    {
-      ketemu = 1;
-      break;
-    }
-  }
-  //Cek apakah sudah ketemu
-  if (!ketemu)
-  {
-    *success = 0;
-    return;
-  }
-  else
-  {
-    //Traversal 20 byte terakhir dari dir[iterDir] - dir[iterDir+32]
-    iterLastByte = iterDir + 12;
-    for (i = 0; i < 20; i++)
-    {
-      if (dir[iterLastByte + i] == 0)
-      {
-        break;
-      }
-      else
-      {
-        readSector(buffer + i * 512, dir[iterLastByte + i]);
-      }
-    }
-    *success = 1;
-    return;
-  }
+	char dir[512];
+	int iterDir = 0;
+	int iterFileName;
+	char ketemu = 0;
+	char sama;
+	int iterLastByte, i;
+	//Isi dir dengan list of semua filename
+	readSector(dir, 2);
+	//Traversal dir
+	for (iterDir = 0; iterDir < 512; iterDir += 32)
+	{
+		sama = 1;
+		for (iterFileName = 0; iterFileName < 12; iterFileName++)
+		{
+			if (filename[iterFileName] == '\0')
+			{
+				break;
+			}
+			else
+			{
+				if (filename[iterFileName] != dir[iterDir + iterFileName])
+				{
+					sama = 0;
+					break;
+				}
+			}
+		}
+		if (sama)
+		{
+			ketemu = 1;
+			break;
+		}
+	}
+	//Cek apakah sudah ketemu
+	if (!ketemu)
+	{
+		*success = 0;
+		return;
+	}
+	else
+	{
+		//Traversal 20 byte terakhir dari dir[iterDir] - dir[iterDir+32]
+		iterLastByte = iterDir + 12;
+		for (i = 0; i < 20; i++)
+		{
+			if (dir[iterLastByte + i] == 0)
+			{
+				break;
+			}
+			else
+			{
+				readSector(buffer + i * 512, dir[iterLastByte + i]);
+			}
+		}
+		*success = 1;
+		return;
+	}
 }
 
 void writeFile(char *buffer, char *filename, int *sectors) {
@@ -244,7 +244,7 @@ void writeFile(char *buffer, char *filename, int *sectors) {
     //if there is no space
     if (space < *sectors)
     {
-       *sectors = 0;
+       *sectors = -1;
        return;
     }
     //if there is a space
@@ -270,9 +270,9 @@ void writeFile(char *buffer, char *filename, int *sectors) {
       i = 0;
       space = 0;
       //find space at map
-      while(i<255 && space < *sectors)
+      while(i<256 && space < *sectors)
       {
-        if(map[i] = 0)
+        if(map[i] == 0)
         {
           map[i] = 0xFF;//sign its used to store data
           dir[idx*32+12+space] = i;
@@ -294,7 +294,8 @@ void writeFile(char *buffer, char *filename, int *sectors) {
   }
   else
   {
-    *sectors = 0;
+    *sectors = -1;
+    return;
   }
   
   writeSector(map,1);
