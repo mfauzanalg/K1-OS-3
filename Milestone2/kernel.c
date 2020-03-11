@@ -17,7 +17,7 @@ int main(void) {
     printString("\r\nSystem Input : \r\n");
     printString("1. Run Default \r\n");
     printString("2. Run App  \r\n");
-
+    printString("3. Debug  \r\n");
     interrupt(0x21,0x1,input,0,0);
     switch(input[0])
     {
@@ -36,8 +36,12 @@ int main(void) {
       case '2' :
         interrupt(0x21, 0x6, "file", 0x2000, &suc);
         break;
-    }
+      case '3':
+        handleInterrupt21(0XFF04, buffer, "test.txt", &suc);
+        printString(buffer);
   }
+    }
+      
 }
 
 void bootlogo(){
@@ -52,27 +56,30 @@ void bootlogo(){
 }
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
-  switch (AX) {
-    case 0x0:
+  char AL, AH;
+  AL = (char) (AX);
+  AH = (char) (AX >> 8);
+  switch (AL) {
+    case 0x00:
       printString(BX);
       break;
-    case 0x1:
+    case 0x01:
       readString(BX);
       break;
-    case 0x2:
+    case 0x02:
       readSector(BX, CX);
       break;
-    case 0x3:
+    case 0x03:
       writeSector(BX, CX);
       break;
-    case 0x4:
-      readFile(BX, CX, DX,(AX>> 8));
+    case 0x04:
+      readFile(BX, CX, DX,(AH));
       break;
-    case 0x5:
-      writeFile(BX, CX, DX);
+    case 0x05:
+      //writeFile(BX, CX, DX, AH);
       break;
-    case 0x6:
-      executeProgram(BX, CX, DX);
+    case 0x06:
+      //executeProgram(BX, CX, DX, AH);
       break;
     default:
       printString("Invalid interrupt");
@@ -84,10 +91,8 @@ void printString(char *string) {
   int i = 0;
   while (string[i]!='\0')
   {
-    int AL = string[i];
-    int AH = 14; //using 0xE
-    int AX = AH*256 + AL;
-    interrupt(16,AX,0,0,0); //using vector table 10h and using 0Eh
+    
+    interrupt(16,0XE00 + string[i],0,0,0); //using vector table 10h and using 0Eh
     i++;
   }
 }
@@ -169,8 +174,10 @@ void findFileS(char* path, char parentIndex, int *S) {
   int j;
   int k;
   k = 0;
-  for(i = 0; path[i] != '/'|| path[i] != '\0'; i++,path++) {
-    temp[i] = path;
+  
+  for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {
+    
+    temp[i] = *path;
     k++;
   }
   path++;
@@ -197,15 +204,15 @@ void findFileS(char* path, char parentIndex, int *S) {
   }
   //not Found
   if(i == 64) {
-    printf("File Not Found");
+    interrupt(0x21, 0, "File Not Found", 0, 0);
   }
   //found and i*16 is the address
   if(dir[i*16+1] == 0xFF) {
     //continue search S
-    findFileS(&path,i,&S);
+    findFileS(path,i,S);
   }
   else {
-    (*S) = dir[i+16+1];
+    (*S) = dir[i*16+1];
   }
 }
 
@@ -220,18 +227,21 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
   i = 0;
   //*Load directory sector into 1024-byte char array
   //Disk directory sits at sector 0x101 and 0x102
-  readSector(dir, 2);
-  readSector(dir + 512, 3);
+  readSector(dir, 0X101);
+  readSector(dir + 512, 0X102);
   //find Sector index in dir
   findFileS(path,parentIndex,&S);
   if(S == 0xFF) {
-    (*result) = 0;
+    (*result) = -1;
     return;
+  }
+  if(S == 0x01){
+    
   }
   //read sector at sector 0x103
   readSector(sector,0x103);
   j = 0;
-  while (j < 16 && sector[S*16+j] == 0 )
+  while (j < 16 && sector[S*16+j] != 0 )
   {
     readSector(buffer+j*512,sector[S*16+j]);
     j++;
@@ -346,5 +356,7 @@ void executeProgram(char *filename, int segment, int *success){
       putInMemory(segment, i, buffer[i]);
     }
     launchProgram(segment);
+  }else{
+    interrupt(0x21, 0, "File not found!", 0, 0);
   }
 }
