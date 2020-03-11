@@ -107,7 +107,7 @@ void main(int argc, char* argv[]) {
     // mark the map entry as taken
     map[i] = 0xFF;
 
-    // mark the sector in the directory entry
+    // mark the sector in the sectors entry
     sector[entrySpaceIndex * 16 + sectcount] = i;
     sectcount++;
 
