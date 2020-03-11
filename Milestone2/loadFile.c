@@ -53,7 +53,7 @@ void main(int argc, char* argv[]) {
 
   // find a free entry in the directory
   for (i = 0; i < 1024; i = i + 0x10)
-    if (dir[i] == 0 && dir[i+1] == 0 && dir[i+2]){
+    if (dir[i] == 0 && dir[i+1] == 0 && dir[i+2] == 0){
        break;
     }
   if (i == 1024) {
@@ -68,10 +68,10 @@ void main(int argc, char* argv[]) {
   }
   // copy the name over
   for (i = 2; i < 16; i++) {
-    if (argv[1][i] == 0){
+    if (argv[1][i-2] == 0){
        break;
     }
-    dir[dirindex + i] = argv[1][i];
+    dir[dirindex + i] = argv[1][i-2];
   }
 
   //find empty sector in sector buffer
