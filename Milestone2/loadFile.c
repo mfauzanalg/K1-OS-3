@@ -81,7 +81,7 @@ void main(int argc, char* argv[]) {
     }
   }
   if(i == 32) {
-    printf("No available space for entry");
+    printf("No available space for entry\n");
     return;
   }
   int entrySpaceIndex = i;
