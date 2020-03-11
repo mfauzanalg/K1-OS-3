@@ -32,45 +32,61 @@ void main(int argc, char* argv[]) {
 
   // load the disk map
   char map[512];
-  fseek(floppy, 512, SEEK_SET);
+  fseek(floppy, 512*0x100, SEEK_SET);
   for (i = 0; i < 512; i++) map[i] = fgetc(floppy);
 
   // load the directory
   char dir[512];
-  fseek(floppy, 512 * 2, SEEK_SET);
-  for (i = 0; i < 512; i++) dir[i] = fgetc(floppy);
+  fseek(floppy, 512 * 0x101, SEEK_SET);
+  for (i = 0; i < 1024; i++) dir[i] = fgetc(floppy);
+
+  //load the sectors 
+  char sector[512];
+  fseek(floppy, 512 * 0x103,SEEK_SET);
+  for (i = 0; i < 512; i++) map[i] = fgetc(floppy);
+  
 
   // find a free entry in the directory
-  for (i = 0; i < 512; i = i + 0x20)
-    if (dir[i] == 0) break;
-  if (i == 512) {
+  for (i = 0; i < 1024; i = i + 0x10)
+    if (dir[i] == 0 && dir[i+1] == 0 && dir[i+2]) break;
+  if (i == 1024) {
     printf("Not enough room in directory\n");
     return;
   }
   int dirindex = i;
 
   // fill the name field with 00s first
-  for (i = 0; i < 12; i++) dir[dirindex + i] = 0x00;
+  for (i = 2; i < 16; i++) dir[dirindex + i] = 0x00;
   // copy the name over
-  for (i = 0; i < 12; i++) {
+  for (i = 2; i < 16; i++) {
     if (argv[1][i] == 0) break;
     dir[dirindex + i] = argv[1][i];
   }
 
-  dirindex = dirindex + 12;
+  //find empty sector in sector buffer
+  for(i = 0; i < 32; i++) {
+    if(sector[i*0x10] == 0) break;
+  }
+  if(i == 32) {
+    printf("No Space for Entry Available");
+    return;
+  }
+  int entrySpaceIndex = i;
+  dir[dirindex] = 0xFF;//assume that the file is binded in root directory
+  dir[dirindex + 1] = entrySpaceIndex; // S or the Sector Index of the file
 
   // find free sectors and add them to the file
   int sectcount = 0;
   while (!feof(loadFil)) {
-    if (sectcount == 20) {
+    if (sectcount == 16) {
       printf("Not enough space in directory entry for file\n");
       return;
     }
 
     // find a free map entry
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < 512; i++)
       if (map[i] == 0) break;
-    if (i == 256) {
+    if (i == 512) {
       printf("Not enough room for file\n");
       return;
     }
@@ -79,8 +95,7 @@ void main(int argc, char* argv[]) {
     map[i] = 0xFF;
 
     // mark the sector in the directory entry
-    dir[dirindex] = i;
-    dirindex++;
+    sector[entrySpaceIndex * 16 + sectcount] = i;
     sectcount++;
 
     printf("Loaded %s to sector %d\n", argv[1], i);
