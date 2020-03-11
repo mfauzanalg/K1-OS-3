@@ -98,7 +98,9 @@ void main(int argc, char* argv[]) {
 
     // find a free map entry
     for (i = 0; i < 512; i++)
-      if (map[i] == 0) break;
+      if (map[i] == 0){
+         break;
+      }
     if (i == 512) {
       printf("Not enough room for file\n");
       return;
