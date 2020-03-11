@@ -129,11 +129,25 @@ void main(int argc, char* argv[]) {
   }
 
   // write the map and directory back to the floppy image
-  fseek(floppy, 512, SEEK_SET);
-  for (i = 0; i < 512; i++) fputc(map[i], floppy);
+  fseek(floppy, 512 * 0x100, SEEK_SET);
+  for (i = 0; i < 512; i++){
+    fputc(map[i], floppy);
+  }
+   
 
-  fseek(floppy, 512 * 2, SEEK_SET);
-  for (i = 0; i < 512; i++) fputc(dir[i], floppy);
+  fseek(floppy, 512 * 0x101, SEEK_SET);
+  for (i = 0; i < 512; i++){
+    fputc(dir[i], floppy);
+  } 
+  
+
+  fseek(floppy, 512 * 0x103, SEEK_SET);
+  for (i = 0; i < 512; i++){
+     fputc(sector[i], floppy);
+  }
+
+
+
 
   fclose(floppy);
   fclose(loadFil);
