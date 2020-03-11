@@ -40,11 +40,10 @@ void main(int argc, char* argv[]) {
   fseek(floppy, 512 * 0x101, SEEK_SET);
   for (i = 0; i < 1024; i++) dir[i] = fgetc(floppy);
 
-  //load the sectors 
+  // load sectors
   char sector[512];
-  fseek(floppy, 512 * 0x103,SEEK_SET);
-  for (i = 0; i < 512; i++) map[i] = fgetc(floppy);
-  
+  fseek(floppy, 512 * 0x103, SEEK_SET);
+  for (i = 0; i < 512; i++) sector[i] = fgetc(floppy);
 
   // find a free entry in the directory
   for (i = 0; i < 1024; i = i + 0x10)
