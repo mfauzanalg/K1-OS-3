@@ -32,13 +32,18 @@ void main(int argc, char* argv[]) {
 
   // load the disk map
   char map[512];
-  fseek(floppy, 512, SEEK_SET);
+  fseek(floppy, 512 * 0x100, SEEK_SET);
   for (i = 0; i < 512; i++) map[i] = fgetc(floppy);
 
   // load the directory
   char dir[512];
-  fseek(floppy, 512 * 2, SEEK_SET);
-  for (i = 0; i < 512; i++) dir[i] = fgetc(floppy);
+  fseek(floppy, 512 * 0x101, SEEK_SET);
+  for (i = 0; i < 1024; i++) dir[i] = fgetc(floppy);
+
+  // load sectors
+  char sector[512];
+  fseek(floppy, 512 * 0x103, SEEK_SET);
+  for (i = 0; i < 512; i++) sector[i] = fgetc(floppy);
 
   // find a free entry in the directory
   for (i = 0; i < 512; i = i + 0x20)
