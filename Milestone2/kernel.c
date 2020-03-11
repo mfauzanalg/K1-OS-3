@@ -66,7 +66,7 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
       writeSector(BX, CX);
       break;
     case 0x4:
-      readFile(BX, CX, DX);
+      readFile(BX, CX, DX,(AX>> 8));
       break;
     case 0x5:
       writeFile(BX, CX, DX);
@@ -161,54 +161,84 @@ void clear(char *buffer, int length){
   }
 }
 
-void readFile(char *buffer, char *filename, int *success) {
-  int isFound;
-  int isMatch;
-  int sectorNo; 
-  int numSectors;
-  char dir [512];
-  int i;// file
-  int j;// name
-  
-  isFound = 0;
-  i = 0;
-  //*Load directory sector into 512-byte char array
-  //Disk directory sits at sector 2
-  readSector(dir, 2);
-  //Try to match file name. If not found, return
-  while (!isFound && i<16)
+
+void findFileS(char* path, char parentIndex, int *S) {
+  char dir[1024];
+  char temp[15];
+  int i;
+  int j;
+  int k;
+  k = 0;
+  for(i = 0; path[i] != '/'|| path[i] != '\0'; i++,path++) {
+    temp[i] = path;
+    k++;
+  }
+  path++;
+  //read dir Sectors
+  readSector(dir,0x101);
+  readSector(dir+512,0x102);
+  //iterate dir
+  for ( i = 0; i < 64; i++)
   {
-     isMatch = 1;
-     j = 0;
-     while (j < 12 && filename[j]!='\0')
-     {
-        if (filename[j] != dir[j+(32*i)]) {
-         isMatch = 0;
-         break;
-        }
-        j = j+1;
-     }
-     if (isMatch) 
-     {
-       isFound = 1;
-     }
-     else 
-     {
-       i = i+1;
-     }
+    //get the parent dir of file
+    if (dir[i*16] == parentIndex)
+    {
+      //iterating and comparing filename
+      for ( j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++)
+      {
+
+      }
+      //if same
+      if(j == k+2) {
+        break;
+      }
+      //else continue iterating i
+    }
   }
-  if (!isFound) {
-   *success = 0;
-   return;
+  //not Found
+  if(i == 64) {
+    printf("File Not Found");
   }
-  i=(i*32)+12;
+  //found and i*16 is the address
+  if(dir[i*16+1] == 0xFF) {
+    //continue search S
+    findFileS(&path,i,&S);
+  }
+  else {
+    (*S) = dir[i+16+1];
+  }
+}
+
+void readFile(char *buffer, char *path, int *result, char parentIndex) {
+  char dir[1024];
+  char sector[512];
+  char temp[15];
+  char S;
+  int i;
+  int j;
+  S = 0xFF;
+  i = 0;
+  //*Load directory sector into 1024-byte char array
+  //Disk directory sits at sector 0x101 and 0x102
+  readSector(dir, 2);
+  readSector(dir + 512, 3);
+  //find Sector index in dir
+  findFileS(path,parentIndex,&S);
+  if(S == 0xFF) {
+    (*result) = 0;
+    return;
+  }
+  //read sector at sector 0x103
+  readSector(sector,0x103);
   j = 0;
-  numSectors = 0;
-  while(j<20 && dir[i+j]!='\0') {
-    readSector(buffer+j*512,dir[i+j]);
+  while (j < 16 && sector[S*16+j] == 0 )
+  {
+    readSector(buffer+j*512,sector[S*16+j]);
     j++;
   }
-  *success = 1;
+  (*result) = 1;
+    
+
 }
 
 void writeFile(char *buffer, char *filename, int *sectors) {
@@ -308,7 +338,7 @@ void writeFile(char *buffer, char *filename, int *sectors) {
 void executeProgram(char *filename, int segment, int *success){
   char buffer[10240];
   int i;
-  readFile(buffer, filename, success);
+  readFile(buffer, filename, success, 0xFF);
   if(*success)
   {
     for(i = 0; i < 10240; i++)
