@@ -217,9 +217,7 @@ void findFileS(char* path, char parentIndex, int *S) {
 }
 
 void readFile(char *buffer, char *path, int *result, char parentIndex) {
-  char dir[1024];
   char sector[512];
-  char temp[15];
   char S;
   int i;
   int j;
@@ -241,8 +239,6 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
     j++;
   }
   (*result) = 1;
-    
-
 }
 
 void writeDir(char *path, int *sectors, char parentIndex, char* name, int* nLength,char* P) {
