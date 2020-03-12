@@ -1,5 +1,5 @@
 // Primitif
-// 1. PrinsString
+// 1. PrinsString (ok)
 // 2. PrintInteger
 // 3. PrintChar
 // 4. len (ok)
@@ -9,16 +9,15 @@
 // 8. find
 // 9. getCommandType
 // 10. concat
-// 11. replace
+// 11. replace (ok)
 // 12. split (ok)
 // 13. clear (ok)
 // 14. searchDir
 // 15. search
 
-void printString(char *string, int newline){
-    
+void printStr(char *string, int newline){
+    interrupt(0x21, 0x00, string, newline, 0);
 }
-
 
 void strLength(char* str, int *len) {
     int k;
@@ -48,7 +47,18 @@ char strCompare(char *string1, char *string2){
     }
 }
 
-
+void charReplace(char *string, char from, char to){
+    int len, i, temp;
+    void (string, &len);
+    i = 0;
+    while (i < len){
+        if (string[i] == from){
+            string[i] == to;
+        }
+        i++;
+    }
+    string[len] = '\0'; 
+}
 
 
 int main (void) {
