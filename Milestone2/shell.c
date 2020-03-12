@@ -6,7 +6,7 @@
 // 5. count (ok)
 // 6. isSame (ok)
 // 7. copy
-// 8. find
+// 8. find (ok)
 // 9. getCommandType
 // 10. concat (gak pernah dipake)
 // 11. replace (ok)
@@ -71,6 +71,19 @@ void count(char *string, char x, int *total){
         }
         i++;
     }
+}
+
+int charFind(char *string, char x){
+    int len, i;
+    strLength(string, &x);
+    i = 0;
+    while (i < len){
+        if (string[i] == x){
+            return i;
+        }
+        i++
+    }
+    return -1;
 }
 
 int main (void) {
