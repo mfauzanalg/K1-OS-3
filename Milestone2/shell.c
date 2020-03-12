@@ -3,12 +3,12 @@
 // 2. PrintInteger
 // 3. PrintChar
 // 4. len (ok)
-// 5. count
+// 5. count (ok)
 // 6. isSame (ok)
 // 7. copy
 // 8. find
 // 9. getCommandType
-// 10. concat
+// 10. concat (gak pernah dipake)
 // 11. replace (ok)
 // 12. split (ok)
 // 13. clear (ok)
@@ -49,7 +49,7 @@ char strCompare(char *string1, char *string2){
 
 void charReplace(char *string, char from, char to){
     int len, i, temp;
-    void (string, &len);
+    strLength(string, &len);
     i = 0;
     while (i < len){
         if (string[i] == from){
@@ -60,6 +60,18 @@ void charReplace(char *string, char from, char to){
     string[len] = '\0'; 
 }
 
+void count(char *string, char x, int *total){
+    int len;
+    *total = 0;
+    strLength(string, &len);
+    i = 0;
+    while (i < len){
+        if (string[i] == x){
+            *total += 1;
+        }
+        i++;
+    }
+}
 
 int main (void) {
     char onShell = 1;
