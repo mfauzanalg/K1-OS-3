@@ -1,24 +1,23 @@
 // Primitif
-// 1. PrinsString
+// 1. PrinsString (ok)
 // 2. PrintInteger
 // 3. PrintChar
 // 4. len (ok)
-// 5. count
+// 5. count (ok)
 // 6. isSame (ok)
 // 7. copy
-// 8. find
+// 8. find (ok)
 // 9. getCommandType
-// 10. concat
-// 11. replace
+// 10. concat (gak pernah dipake)
+// 11. replace (ok)
 // 12. split (ok)
 // 13. clear (ok)
 // 14. searchDir
 // 15. search
 
-void printString(char *string, int newline){
-    
+void printStr(char *string, int newline){
+    interrupt(0x21, 0x00, string, newline, 0);
 }
-
 
 void strLength(char* str, int *len) {
     int k;
@@ -112,7 +111,44 @@ int recognizeCommand(char* str) {
         return -1;
     }
 }
+void charReplace(char *string, char from, char to){
+    int len, i, temp;
+    strLength(string, &len);
+    i = 0;
+    while (i < len){
+        if (string[i] == from){
+            string[i] == to;
+        }
+        i++;
+    }
+    string[len] = '\0'; 
+}
 
+void count(char *string, char x, int *total){
+    int len,i;
+    *total = 0;
+    strLength(string, &len);
+    i = 0;
+    while (i < len){
+        if (string[i] == x){
+            *total += 1;
+        }
+        i++;
+    }
+}
+
+int charFind(char *string, char x){
+    int len, i;
+    strLength(string, &x);
+    i = 0;
+    while (i < len){
+        if (string[i] == x){
+            return i;
+        }
+        i++;
+    }
+    return -1;
+}
 
 int main (void) {
     int argc,itr;
@@ -138,9 +174,11 @@ int main (void) {
             }
         }
         if(command == 2) { //cd
-            if (argc > 2)
-            {
-                /* code */
+            if (argc > 2) {
+                printStr("invalid Params",1);
+            }
+            else if (argc == 1) {
+                currentDirectory[0] = 0xff;
             }
             
         }
