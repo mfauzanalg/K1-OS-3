@@ -231,9 +231,7 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
     (*result) = -1;
     return;
   }
-  if(S == 0x01){
-    
-  }
+  
   //read sector at sector 0x103
   readSector(sector,0x103);
   j = 0;
