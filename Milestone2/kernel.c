@@ -8,7 +8,8 @@ void bootlogo();
 
 int main(void) {
   
-  char input[10];int suc;
+  char input[10];
+  int suc;
   char buffer[10240];
   makeInterrupt21();
   bootlogo();
@@ -23,14 +24,15 @@ int main(void) {
     {
       case '1' : 
         interrupt(0x21, 0x4, buffer, "key.txt", &suc);
-        if (suc)
+        if (suc>0)
         {
-          interrupt(0x21,0x0, "Key : ", 0, 0);
+          interrupt(0x21,0x0, "Key: ", 0, 0);
           interrupt(0x21,0x0, buffer, 0, 0);
         }
         else
         {
-          interrupt(0x21, 0x6, "milestone1", 0x2000, &suc);
+          printString("sdasadsdaa");
+          handleInterrupt21(0XFF05, "asd", "a.txt", &suc);
         }
         break;
       case '2' :
@@ -38,6 +40,9 @@ int main(void) {
         break;
       case '3':
         handleInterrupt21(0XFF04, buffer, "test.txt", &suc);
+        printString(buffer);
+        handleInterrupt21(0XFF05, buffer, "bab.txt", &suc);
+        handleInterrupt21(0XFF04, buffer, "bab.txt", &suc);
         printString(buffer);
   }
     }
@@ -73,13 +78,13 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
       writeSector(BX, CX);
       break;
     case 0x04:
-      readFile(BX, CX, DX,(AH));
+      readFile(BX, CX, DX,AH);
       break;
     case 0x05:
-      //writeFile(BX, CX, DX, AH);
+      writeFile(BX, CX, DX, AH);
       break;
     case 0x06:
-      //executeProgram(BX, CX, DX, AH);
+      executeProgram(BX, CX, DX, AH);
       break;
     default:
       printString("Invalid interrupt");
@@ -204,7 +209,9 @@ void findFileS(char* path, char parentIndex, int *S) {
   }
   //not Found
   if(i == 64) {
-    interrupt(0x21, 0, "File Not Found", 0, 0);
+    interrupt(0x21, 0, "File Not Found heheheh\r\n", 0, 0);
+    (*S) == 0xFF;
+    return;
   }
   //found and i*16 is the address
   if(dir[i*16+1] == 0xFF) {
@@ -226,7 +233,7 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
   //find Sector index in dir
   findFileS(path,parentIndex,&S);
   if(S == 0xFF) {
-    (*result) = -1;
+    *result = -1;
     return;
   }
   
@@ -238,10 +245,10 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
     readSector(buffer+j*512,sector[S*16+j]);
     j++;
   }
-  (*result) = 1;
+  *result = 1;
 }
 
-void writeDir(char *path, int *sectors, char parentIndex, char* name, int* nLength,char* P) {
+void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) {
   char dir[1024];
   char sector[512];
   char map[512];
@@ -257,14 +264,15 @@ void writeDir(char *path, int *sectors, char parentIndex, char* name, int* nLeng
   readSector(sector,0x103);
   //fill temp with dir or file name
   length = 0;
-  for(i = 0; *path != '/' && *path != 0; i++,path++) {
+  clear(temp,15);
+  for(i = 0; *path != '/' && *path != 0; i++,path+=1) {
     temp[i] = *path;
     length++;
   }
   if(*path!=0) {
-    path++;
+    path+=1;
   }
-  //check dir is file or directory exist or not
+  //check dir is, file or directory exist or not
   for(i = 0; i < 64; i++) {
     if(dir[i*16] == parentIndex) {
       for(j = 2; j <length + 2 && dir[i*16+j] == temp[j-2]; j++)  {
@@ -278,19 +286,22 @@ void writeDir(char *path, int *sectors, char parentIndex, char* name, int* nLeng
   //if found then recurse into the next dir or file
   if(i!=64) {
     if(*path != 0){ //if dir
-      writeDir(path,sector,i,name,nLength,P);
+      writeDir(path,sector,i,nLength,P);
     }
     else { //if file and its exist
       (*sectors) = -1;
+      interrupt(0x21, 0, "File already exists!\r\n", 0,0);
     }
   }
   //if not found then create
   else {
     if(*path != 0) { //not found and pointer ends not in the filename which ended by '\0'
       (*sectors) = -4; //error folder not valid
+      interrupt(0x21, 0, "Folder is not valid!\r\n", 0,0);
     }
-    else { //ended in null string so create the file 
-      (*name) = temp; //name of the file
+    else { //ended in null string so create the file
+      temp[length] = 0; 
+      path-=length;
       (*nLength) = length; //length of the file
       (*P) = parentIndex; // parent index of the file or the root
     }
@@ -316,7 +327,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   readSector(dir+512,0x102);
   readSector(sector,0x103);
 
-  writeDir(path,sectors,parentIndex,filename,&nameLength,&fileParent);
+  writeDir(path,sectors,parentIndex,&nameLength,&fileParent);
   //write and search empty sector and the dir ofc
   // P = fileparent, 14 bit name is filename , nameLength for iteration
   if (*sectors == -1 || *sectors == -4) {
@@ -328,11 +339,12 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   //check space available first
   for ( k = 0; k < 32; k++)
   {
-    if(sector[i*16] == 0) break;
+    if(sector[k*16] == 0) break;
   }
   //no space available
   if(k==32) {
     (*sectors) = -3;
+     interrupt(0x21, 0, "No space available!\r\n", 0,0);
     return;
   }
   //k == S
@@ -346,15 +358,19 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   }
   //dir is full
   if(i==64) {
+     interrupt(0x21, 0, "Dir sector is full!\r\n", 0,0);
     (*sectors) = -2;
     return;
   }
   //dir are available
-  clear(dir+i*16,16);
+  //clear(dir+i*16,16);
   dir[i*16] = fileParent;
   dir[i*16+1] = k;
+  interrupt(0x21, 0, "awooo", 0,0);
   for(itr = 2; itr < nameLength + 2;itr++) {
-    dir[i*16+itr] = filename[itr-2]; //naming the file
+    dir[i*16+itr] = *path; //naming the file
+    path++;
+    
   }
   //naming complete i==useless now
   //write the content to buffer and tags it on sector and map
@@ -385,10 +401,10 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
 }
 
 
-void executeProgram(char *filename, int segment, int *success){
+void executeProgram(char *filename, int segment, int *success, char parentIndex){
   char buffer[10240];
   int i;
-  readFile(buffer, filename, success, 0xFF);
+  readFile(&buffer, filename, success, parentIndex);
   if(*success)
   {
     for(i = 0; i < 10240; i++)
@@ -397,6 +413,6 @@ void executeProgram(char *filename, int segment, int *success){
     }
     launchProgram(segment);
   }else{
-    interrupt(0x21, 0, "File not found!", 0, 0);
+    interrupt(0x21, 0, "File not found!\r\n", 0, 0);
   }
 }
