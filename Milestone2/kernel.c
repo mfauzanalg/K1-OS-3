@@ -225,10 +225,6 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
   int j;
   S = 0xFF;
   i = 0;
-  //*Load directory sector into 1024-byte char array
-  //Disk directory sits at sector 0x101 and 0x102
-  readSector(dir, 0X101);
-  readSector(dir + 512, 0X102);
   //find Sector index in dir
   findFileS(path,parentIndex,&S);
   if(S == 0xFF) {
