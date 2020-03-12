@@ -381,11 +381,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   writeSector(map,0x100);
   writeSector(dir,0x101);
   writeSector(dir+512,0x102);
-
-
-
-
-
+  writeSector(sector,0x103);
 }
 
 
