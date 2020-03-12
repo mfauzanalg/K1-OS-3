@@ -15,6 +15,11 @@
 // 14. searchDir
 // 15. search
 
+void printString(char *string, int newline){
+    
+}
+
+
 void strLength(char* str, int *len) {
     int k;
     k = 0;
@@ -41,8 +46,9 @@ char strCompare(char *string1, char *string2){
     else {
         return 0;
     }
-
 }
+
+
 
 
 int main (void) {
