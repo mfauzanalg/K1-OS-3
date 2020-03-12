@@ -39,7 +39,7 @@ int main(void) {
         interrupt(0x21, 0x6, "file", 0x2000, &suc);
         break;
       case '3':
-        handleInterrupt21(0XFF04, buffer, "test.txt", &suc);
+        handleInterrupt21(0XFF04, buffer, "fgfg/test.txt", &suc);
         printString(buffer);
         handleInterrupt21(0XFF05, buffer, "bab.txt", &suc);
         handleInterrupt21(0XFF04, buffer, "bab.txt", &suc);

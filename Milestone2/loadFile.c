@@ -5,6 +5,7 @@
 // This should be compiled with gcc and run outside of the OS
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void main(int argc, char* argv[]) {
   int i;
@@ -85,7 +86,7 @@ void main(int argc, char* argv[]) {
     return;
   }
   int entrySpaceIndex = i;
-  dir[dirindex] = 0xFF;//assume that the file is binded in root directory
+  dir[dirindex] = (int)strtol(argv[2], NULL, 16);//assume that the file is binded in root directory
   dir[dirindex + 1] = entrySpaceIndex; // S or the Sector Index of the file
 
   // find free sectors and add them to the file
