@@ -245,97 +245,90 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
 
 }
 
-void writeFile(char *buffer, char *filename, int *sectors) {
+void writeDir(char *path, int *sectors, char parentIndex, char* name, int* nLength,char* P) {
+  char dir[1024];
+  char sector[512];
   char map[512];
-  char dir[512];
+  char temp[15];
+
+  int i ;
+  int length;
+  int j;
+
+  readSector(map,0x100);
+  readSector(dir,0x101);
+  readSector(dir,0x102);
+  readSector(sector,0x103);
+  //fill temp with dir or file name
+  length = 0;
+  for(i = 0; *path != '/' && *path != 0; i++,path++) {
+    temp[i] = *path;
+    length++;
+  }
+  if(*path!=0) {
+    path++;
+  }
+  //check dir is file or directory exist or not
+  for(i = 0; i < 64; i++) {
+    if(dir[i*16] == parentIndex) {
+      for(j = 2; j <length + 2 && dir[i*16+j] == temp[j-2]; j++)  {
+
+      }
+      if(j==length+2) {
+        break;
+      }
+    }
+  }
+  //if found then recurse into the next dir or file
+  if(i!=64) {
+    if(*path != 0){ //if dir
+      writeDir(path,sector,i,name,nLength,P);
+    }
+    else { //if file and its exist
+      (*sectors) = -1;
+    }
+  }
+  //if not found then create
+  else {
+    //if file create file
+    if(*path != 0) {
+      (*sectors) = -2;
+    }
+    //if dir create dir
+    else {
+      (*name) = temp; //name of the file
+      (*nLength) = length; //length of the file
+      (*P) = parentIndex; // parent index of the file or the root
+    }
+  }
+}
+
+void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
+  char map[512];
+  char dir[1024];
+  char sector[512];
+  char buffDir[16];
   char secBuff[512];
   int idx;
+  //file info
+  char filename[15];
+  int nameLength;
+  char fileParent;
 
-  readSector(map,1);
-  readSector(dir,2);
+  readSector(map,0x100);
+  readSector(dir,0x101);
+  readSector(dir+512,0x102);
+  readSector(sector,0x103);
 
-  //find some empty dir 
-  for (idx = 0; idx < 16; ++idx)
-  {
-    if (dir[idx*32] == '\0') 
-    {
-      break;
-    }
-  }
-
-  if (idx<16) 
-  {
-    int space = 0;
-    int i = 0;
-    int j;
-    //find space available
-    while (i<256 && space < *sectors)
-    {
-      if (map[i] == 0)
-      {
-        space++;
-      }
-      i++;
-    }
-    //if there is no space
-    if (space < *sectors)
-    {
-       *sectors = -1;
-       return;
-    }
-    //if there is a space
-    else
-    {
-      //clear file sector
-      clear(dir+idx*32,32);
-      i = 0;
-      while (i<12)
-      {
-        //if not null string
-        if (filename[i] != '\0')
-        {
-          dir[idx*32+i] = filename[i];
-        }
-        //case end name
-        else
-        {
-          break;
-        }
-        i++;
-      }
-      i = 0;
-      space = 0;
-      //find space at map
-      while(i<256 && space < *sectors)
-      {
-        if(map[i] == 0)
-        {
-          map[i] = 0xFF;//sign its used to store data
-          dir[idx*32+12+space] = i;
-          //clear dir
-          clear(secBuff,512);
-          j = 0;
-          while (j<512)
-          {
-            secBuff[j] = buffer[space*512+j];
-            j++;
-          }
-          //write sectors
-          writeSector(secBuff,i);
-          space++;
-        }
-        i++;
-      }
-    }    
-  }
-  else
-  {
-    *sectors = -1;
+  writeDir(path,sectors,parentIndex,filename,&nameLength,&fileParent);
+  //write and search empty sector and the dir ofc
+  if (*sectors == -1 || *sectors == -2) {
     return;
   }
-  
-  writeSector(map,1);
-  writeSector(dir,2);
+  //else
+
+
+
 }
 
 
