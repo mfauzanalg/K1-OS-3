@@ -270,8 +270,8 @@ void writeDir(char *path, int *sectors, char parentIndex, char* name, int* nLeng
       for(j = 2; j <length + 2 && dir[i*16+j] == temp[j-2]; j++)  {
 
       }
-      if(j==length+2) {
-        break;
+      if(j==length+2) { // is iterator
+        break; //i as index of the directory
       }
     }
   }
@@ -286,12 +286,10 @@ void writeDir(char *path, int *sectors, char parentIndex, char* name, int* nLeng
   }
   //if not found then create
   else {
-    //if file create file
-    if(*path != 0) {
-      (*sectors) = -2;
+    if(*path != 0) { //not found and pointer ends not in the filename which ended by '\0'
+      (*sectors) = -4; //error folder not valid
     }
-    //if dir create dir
-    else {
+    else { //ended in null string so create the file 
       (*name) = temp; //name of the file
       (*nLength) = length; //length of the file
       (*P) = parentIndex; // parent index of the file or the root
@@ -304,8 +302,10 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   char dir[1024];
   char sector[512];
   char buffDir[16];
-  char secBuff[512];
-  int idx;
+  char tempBuff[512];
+  //var
+  int i,k,itr;
+  int space;
   //file info
   char filename[15];
   int nameLength;
@@ -318,10 +318,71 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
 
   writeDir(path,sectors,parentIndex,filename,&nameLength,&fileParent);
   //write and search empty sector and the dir ofc
-  if (*sectors == -1 || *sectors == -2) {
+  // P = fileparent, 14 bit name is filename , nameLength for iteration
+  if (*sectors == -1 || *sectors == -4) {
     return;
   }
-  //else
+  //else write the file !!
+
+  //find S
+  //check space available first
+  for ( k = 0; k < 32; k++)
+  {
+    if(sector[i*16] == 0) break;
+  }
+  //no space available
+  if(k==32) {
+    (*sectors) = -3;
+    return;
+  }
+  //k == S
+
+  //write P,S,and filename to the dir sector
+  //find empty dir
+  for(i = 0; i < 64; i++) {
+    if(dir[i*16]==0 && dir[i*16 + 1]==0 && dir[i*16 + 2]==0) {
+      break;//i as the dir empty index
+    }
+  }
+  //dir is full
+  if(i==64) {
+    (*sectors) = -2;
+    return;
+  }
+  //dir are available
+  clear(dir+i*16,16);
+  dir[i*16] = fileParent;
+  dir[i*16+1] = k;
+  for(itr = 2; itr < nameLength + 2;itr++) {
+    dir[i*16+itr] = filename[itr-2]; //naming the file
+  }
+  //naming complete i==useless now
+  //write the content to buffer and tags it on sector and map
+  clear(sector+k*16,16); //clear sector buffer
+  i = 0;
+  space = 0;
+  while(i<256 && space <*sectors) {
+    //space available
+    if(map[i] == 0)  {
+      sector[k*16+space] = i;
+      map[i] = 0xFF;
+      //clear tempBuff
+      clear(tempBuff,512);
+      for ( itr = 0; itr < 512; itr++)
+      {
+        tempBuff[itr] = buffer[space*512+itr];
+      }
+      writeSector(tempBuff,i);
+      space++;
+    }
+    i++;
+  }
+
+  writeSector(map,0x100);
+  writeSector(dir,0x101);
+  writeSector(dir+512,0x102);
+
+
 
 
 
