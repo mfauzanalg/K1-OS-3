@@ -14,6 +14,15 @@
 // 13. clear (ok)
 // 14. searchDir
 // 15. search
+void printStr(char *string, int newline);
+void strLength(char* str, int *len);
+int splitString(char* str, char sprt, char yield[32][128]);
+void clear(char* buffer, int size);
+char strCompare(char *string1, char *string2);
+int recognizeCommand(char* str);
+void charReplace(char *string, char from, char to);
+void count(char *string, char x, int *total);
+int charFind(char *string, char x);
 
 void printStr(char *string, int newline){
     interrupt(0x21, 0x00, string, newline, 0);
@@ -87,8 +96,8 @@ char strCompare(char *string1, char *string2){
 int recognizeCommand(char* str) {
     int i;
     char cmd[20];
-    clear(cmd,20);
     int argLen;
+    clear(cmd,20);
     strLength(str,&argLen);
     //copy string
     for ( i = 0; i < argLen && i < 20; i++) {

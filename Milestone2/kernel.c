@@ -17,7 +17,7 @@ int main(void) {
   while(1) {
     printString("\r\nSystem Input : \r\n");
     printString("1. Run Default \r\n");
-    printString("2. Run App  \r\n");
+    printString("2. Open shell  \r\n");
     printString("3. Debug  \r\n");
     interrupt(0x21,0x1,input,0,0);
     switch(input[0])
@@ -36,7 +36,7 @@ int main(void) {
         }
         break;
       case '2' :
-        interrupt(0x21, 0x6, "file", 0x2000, &suc);
+        interrupt(0x21, 0x6, "shell", 0x2000, &suc);
         break;
       case '3':
         handleInterrupt21(0XFF04, buffer, "fgfg/test.txt", &suc);
