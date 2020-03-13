@@ -184,14 +184,14 @@ void cd(char* path, char prevParent){
                 //iterating and comparing filename
                 for (j = 2; j < length+2 && dir[i*16+j] == np[j-2]; j++){
                 }
-                    printStr(*(dir+i*16+j));
-                    printStr("\r\n")
-                    printStr(np);
+                    // printStr(*(dir+i*16+j));
+                    // printStr("\r\n")
+                    // printStr(np);
                 //if same
                 if (j == length+2){
                     break;
-                }
             //else continue iterating i
+                }
             }
         }
 
