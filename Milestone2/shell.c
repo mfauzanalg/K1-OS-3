@@ -165,20 +165,20 @@ void cd(char* path, char prevParent){
     length = 0;
 
     
-    while (path[length] != '/' && path[length] != 0){
-        length++;
-    }
-
-    for (i = 0; i < length; i++){
-        np[i] = path[i];
-    }
-    if(np[0] == "." && np[1] == "."){
+    if(*path == "." && *(path+1) == "."){
         if(currentDir!=0xFF){
             currentDir = dir[i*16];
             path+=length+1;
         }
     }else {
 
+        while (path[length] != '/' && path[length] != 0){
+            length++;
+        }
+
+        for (i = 0; i < length; i++){
+            np[i] = path[i];
+        }
         for ( i = 0; i < 64; i++){
             //get the parent dir of file
             if (dir[i*16] == curParent){
