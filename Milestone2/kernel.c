@@ -56,8 +56,8 @@ void bootlogo(){
     printString("| |\\/| | | | |\\___ \\| |  | | |      |  _  /| | '_ \\ / _ \\ __|\r\n");
     printString("| |  | | |_| |____) | |__| | |____  | | \\ \\| | |_) |  __/ |_\r\n"); 
     printString("|_|  |_|\\__, |_____/ \\___\\_\\______| |_|  \\_\\_|_.__/ \\___|\\__|\r\n");
-    printString("         __/ |\r\n",0);                                               
-    printString("        |___/\r\n",0);   
+    printString("         __/ |\r\n");                                               
+    printString("        |___/\r\n");   
 }
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
