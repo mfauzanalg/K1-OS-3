@@ -50,14 +50,14 @@ int main(void) {
 }
 
 void bootlogo(){
-    printString(" __  __        _____  ____  _        _____  _ _          _\r\n");   
-    printString("|  \\/  |      / ____|/ __ \\| |      |  __ \\(_) |        | |\r\n");  
-    printString("| \\  / |_   _| (___ | |  | | |      | |__) |_| |__   ___| |_\r\n"); 
-    printString("| |\\/| | | | |\\___ \\| |  | | |      |  _  /| | '_ \\ / _ \\ __|\r\n");
-    printString("| |  | | |_| |____) | |__| | |____  | | \\ \\| | |_) |  __/ |_\r\n"); 
-    printString("|_|  |_|\\__, |_____/ \\___\\_\\______| |_|  \\_\\_|_.__/ \\___|\\__|\r\n");
-    printString("         __/ |\r\n");                                               
-    printString("        |___/\r\n");   
+    printString(" __  __        _____  ____  _        _____  _ _          _\r\n",0);   
+    printString("|  \\/  |      / ____|/ __ \\| |      |  __ \\(_) |        | |\r\n",0);  
+    printString("| \\  / |_   _| (___ | |  | | |      | |__) |_| |__   ___| |_\r\n",1); 
+    printString("| |\\/| | | | |\\___ \\| |  | | |      |  _  /| | '_ \\ / _ \\ __|\r\n",0);
+    printString("| |  | | |_| |____) | |__| | |____  | | \\ \\| | |_) |  __/ |_\r\n",0); 
+    printString("|_|  |_|\\__, |_____/ \\___\\_\\______| |_|  \\_\\_|_.__/ \\___|\\__|\r\n",0);
+    printString("         __/ |\r\n",0);                                               
+    printString("        |___/\r\n",0);   
 }
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
@@ -94,10 +94,9 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
 
 void printString(char *string) {
   int i = 0;
-  while (string[i]!='\0')
+  while (*(string+i)!='\0')
   {
-    
-    interrupt(16,0XE00 + string[i],0,0,0); //using vector table 10h and using 0Eh
+    interrupt(16,0XE00 + *(string+i),0,0,0); //using vector table 10h and using 0Eh
     i++;
   }
 }
