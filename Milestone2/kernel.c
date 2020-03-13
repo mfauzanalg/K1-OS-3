@@ -36,10 +36,10 @@ int main(void) {
         }
         break;
       case '2' :
-        interrupt(0x21, 0x6, "shell", 0x2000, &suc);
+        handleInterrupt21(0xFF06,"shell",0x3000,&suc);
         break;
       case '3':
-        handleInterrupt21(0XFF04, buffer, "fgfg/test.txt", &suc);
+        handleInterrupt21(0XFF04, buffer, "test.txt", &suc);
         printString(buffer);
         handleInterrupt21(0XFF05, buffer, "bab.txt", &suc);
         handleInterrupt21(0XFF04, buffer, "bab.txt", &suc);
@@ -411,6 +411,7 @@ void executeProgram(char *filename, int segment, int *success, char parentIndex)
     {
       putInMemory(segment, i, buffer[i]);
     }
+    printString("\r\nMasuk\r\n");
     launchProgram(segment);
   }else{
     interrupt(0x21, 0, "File not found!\r\n", 0, 0);
