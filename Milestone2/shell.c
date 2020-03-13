@@ -6,32 +6,36 @@ void getInput(char* buffer);
 void clear(char* bufffer, int size);
 void split(char* string, char splitter, char result[64][128], int *count);
 void cd(char* path, char prevParent);
-int strcmp(char* str1, char* str2);
 int len(char* str);
-void strcopy(char* str1, char* str2, int length);
+void exeFile(char* dir,char* file,char* suc,char* newDir);
+
 
 void copyStr(char* str1, char* str2);
 int len(char*str);
 int RecogCommand(char *str);
 //var global
-char currentDir = 4;
+char currentDir = 0xFF;
 char curParent;
 char dir[1024];
 char input[128];
-
+int segmentAvb;
 
 
 int main (void) {
+    segmentAvb = 5;
     int argc;
     char argv[64][128];
 
     //readd dir
-    int itr,itr2;
+    int itr,itr2,itr3;
     int caseCommand;
     char* file;
     char input[128];
+    char newDir;
     char command[128];
     char arg[128];
+    char* file;
+    int suc;
     while (1)
     {
         clear(input,128);
@@ -43,15 +47,39 @@ int main (void) {
         printDir();
         printStr("$ ");
         interrupt(0x21,0x1,input,0,0);
-        for(itr = 0,itr2 = 0; input[itr2] != ' ';itr++,itr2+=1) {
+        for(itr = 0,itr2 = 0; input[itr2] != ' ' && input[itr2]!=0;itr++,itr2+=1) {
             command[itr] = input[itr2];
         }
         itr2++; //skip white space
         for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
-            arg[itr] = *input;
+            arg[itr] = input[itr2];
         }
-        file = &command[2];
-        RecogCommand(command);
+        if(command[0]=='c' && command[1]=='d') {
+            cd(arg,currentDir);
+        }
+        if(command[0] == '.' && command[1] == '/' && command[2]!=0) {
+            file = &command[2];
+            interrupt(0x21,currentDir << 8||0x06,file,segmentAvb*0x1000,&suc);
+            segmentAvb++;
+        }
+        else if(arg[0]==0) {
+            file = &command[2];
+            exeFile(&currentDir,file,&suc,&newDir);
+            if(suc == 1) {
+                interrupt(0x21,newDir << 8 || 0x06,file,segmentAvb*0x1000,&suc);
+                segmentAvb++;
+            }
+            else {
+                printStr("\r\nCould not find File\r\n");
+            }
+        }
+        else {
+            printStr("\r\nInvalid Command \r\n");
+        }
+        if(suc == 1) {
+            printStr("\r\nSuccess\r\n");
+        }
+
     }
 }
 
@@ -140,44 +168,6 @@ int len(char* str){
     return i;
 }
 
-int strcmp(char* str1, char* str2){
-    int i;
-    int len1, len2;
-    len1 = len(str1);
-    len2 = len(str2);
-    int stop;
-
-    i = 0;
-    stop = 0;
-    if (len1 != len2){
-        return 0;
-    }
-    else{
-        while (i < len1 && !stop){
-            if (str1[i] != str2[i]){
-                stop = 1;
-            }
-            i++;
-        }
-        if (stop){
-            return 0;
-        }
-        else{
-            return 1;
-        }
-    }   
-}
-
-void strcopy(char* str, char* res, int length){
-    int len1, i;
-    len1 = len(str);
-
-    for (i = 0; i < len1; i++){
-        res[i] = str[i];
-    }
-    res[len1] = '\0';
-
-}
 
 void cd(char* path, char prevParent){
     int i, j, k;
@@ -222,5 +212,41 @@ void cd(char* path, char prevParent){
             *path += length+1;
             cd(path, prevParent);
         }//else = done
+    }
+}
+
+void exeFile(char* dir,char* file,char* suc, char* newDir) {
+    int i, j, length;
+    char temp[14];
+    length = 0;
+    clear(temp,14);
+    for(i = 0; *file != '/' && *file != 0; i++,file+=1) {
+        temp[i] = *file;
+        length++;
+    }
+    if(*file != 0) {
+        file+=1;
+    }
+    for(i = 0; i < 64; i++) {
+        if(dir[i*16] == currentDir) {
+            for(j = 2; j <length + 2 && dir[i*16+j] == temp[j-2]; j++)  {
+            }
+            if(j==length+2) { // is iterator
+                break; //i as index of the directory
+            }
+        }
+    }
+    if(i!=64) { //
+        if(*file != 0) {
+            exeFile(i,file,suc,newDir);
+        }
+        else { //found
+            file-=length;
+            *newDir = i;
+            *suc = 1;
+        }
+    }
+    else { //not found
+        *suc = -1;
     }
 }
