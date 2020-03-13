@@ -8,14 +8,13 @@ void clear(char* bufffer, int size);
 char currentDir = 0xFF;
 char curParent;
 char dir[1024];
-char input[128];
 
 
 int main (void) {
     //readd dir
     while (1)
     {
-        clear(&input,128);
+        char input[128];
         readSector(dir,0x101);
         readSector(dir+512,0x102);
         curParent = currentDir;
@@ -33,7 +32,7 @@ int printStr(char* str, char newLine) {
     interrupt(0x21,0,print,newLine,0);
 }
 
-void readSector(char* buffer, char sector) {
+void readSector(char* buffer, int sector) {
     interrupt(0x21,0x0002,buffer,sector,0);
 }
 
