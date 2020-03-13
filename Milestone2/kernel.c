@@ -120,10 +120,7 @@ void readString (char *string) {
     else
     {
       //print on TTY
-      AL = string[i];
-      AH = 0xE;
-      AX  = AH*256 + AL;
-      interrupt(16,AX,0,0,0); //print thoose char
+      interrupt(16,0XE00 + *(string+i),0,0,0);
       i++;
     }
   } while (string[i-1]!='\r'); //end read if enter key pressed
