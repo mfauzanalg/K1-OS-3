@@ -178,6 +178,7 @@ void cd(char* path, char prevParent){
     i = 0;
     length = 0;
 
+    
     while (path[length] != '/' && path[length] != 0){
         length++;
     }
@@ -185,35 +186,43 @@ void cd(char* path, char prevParent){
     for (i = 0; i < length; i++){
         np[i] = path[i];
     }
-
-    for ( i = 0; i < 64; i++){
-        //get the parent dir of file
-        if (dir[i*16] == curParent){
-            //iterating and comparing filename
-            for (j = 2; j < k+2 && dir[i*16+j] == np[j-2]; j++){
-                //
-            }
-            //if same
-            if (j == k+2){
-                break;
-            }
-        //else continue iterating i
+    if(np[0] == "." && np[1] == "."){
+        if(currentDir!=0xFF){
+            currentDir = dir[i*16];
+            path+=length+1;
         }
-    }
+    }else {
 
-    if (i == 64){
-        printStr("bash: cd: ");
-        printStr(path);
-        printStr(": No such file or directoey");
-        curParent = prevParent;
-        
-    }else{//ketemu
-        currentDir = i;
-        if (*path !='\0'){
-            *path += length+1;
-            cd(path, prevParent);
-        }//else = done
-    }
+        for ( i = 0; i < 64; i++){
+            //get the parent dir of file
+            if (dir[i*16] == curParent){
+                //iterating and comparing filename
+                for (j = 2; j < k+2 && dir[i*16+j] == np[j-2]; j++){
+                    //
+                }
+                //if same
+                if (j == k+2){
+                    break;
+                }
+            //else continue iterating i
+            }
+        }
+
+        if (i == 64){
+            printStr("bash: cd: ");
+            printStr(path);
+            printStr(": No such file or directory");
+            curParent = prevParent;
+            
+        }else{//ketemu
+            currentDir = i;
+            if (*path !='\0'){
+                path += length+1;
+                cd(path, prevParent);
+            }//else = done
+        }
+
+    } 
 }
 
 void exeFile(char* dir,char* file,char* suc, char* newDir) {
