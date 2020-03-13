@@ -11,8 +11,6 @@ void exeFile(char* dir,char* file,char* suc,char* newDir);
 
 
 void copyStr(char* str1, char* str2);
-int len(char*str);
-int RecogCommand(char *str);
 //var global
 char currentDir = 0xFF;
 char curParent;
@@ -22,10 +20,7 @@ int segmentAvb;
 
 
 int main (void) {
-    segmentAvb = 5;
-    int argc;
-    char argv[64][128];
-
+    int segmentAvb = 5;
     //readd dir
     int itr,itr2,itr3;
     int caseCommand;
@@ -34,7 +29,6 @@ int main (void) {
     char newDir;
     char command[128];
     char arg[128];
-    char* file;
     int suc;
     while (1)
     {
@@ -56,8 +50,9 @@ int main (void) {
         }
         if(command[0]=='c' && command[1]=='d' && arg[0] != 0) {
             cd(arg,currentDir);
+
         }
-        if(command[0] == '.' && command[1] == '/' && command[2]!=0) {
+        else if(command[0] == '.' && command[1] == '/' && command[2]!=0) {
             file = &command[2];
             interrupt(0x21,currentDir << 8||0x06,file,segmentAvb*0x1000,&suc);
             segmentAvb++;
@@ -131,7 +126,6 @@ void split(char* string, char splitter, char result[64][128], int *count){
     k = 0;
 
     clear(result[j], 128);
-int strcmp(char* str1, char* str2);
     while (string[i] != '\0'){
         if(string[i] != splitter){
             result[j][k] = string[i];
@@ -160,14 +154,6 @@ void copyStr(char* str1, char* str2) {
     }
 }
 
-int len(char* str){
-    int i;
-    i = 0;
-    while (str[i] != '\0'){
-        i+=1;
-    }
-    return i;
-}
 
 
 void cd(char* path, char prevParent){
