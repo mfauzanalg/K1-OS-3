@@ -54,7 +54,7 @@ int main (void) {
         for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
             arg[itr] = input[itr2];
         }
-        if(command[0]=='c' && command[1]=='d') {
+        if(command[0]=='c' && command[1]=='d' && arg[0] != 0) {
             cd(arg,currentDir);
         }
         if(command[0] == '.' && command[1] == '/' && command[2]!=0) {
@@ -131,6 +131,7 @@ void split(char* string, char splitter, char result[64][128], int *count){
     k = 0;
 
     clear(result[j], 128);
+int strcmp(char* str1, char* str2);
     while (string[i] != '\0'){
         if(string[i] != splitter){
             result[j][k] = string[i];
