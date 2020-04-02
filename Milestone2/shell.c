@@ -27,6 +27,7 @@ int main (void) {
     char newDir;
     char command[128];
     char arg[128];
+    char filename[16];
     int suc;
     while (1)
     {
@@ -35,11 +36,11 @@ int main (void) {
         clear(arg,128);
         readSector(dir,0x101);
         readSector(dir+512,0x102);
+        curParent = currentDir;
 
         printDir();
         printStr("\b$ ");
 
-        curParent = currentDir;
         interrupt(0x21,0x1,input,0,0);
         //input command
         for(itr = 0,itr2 = 0; input[itr2] != ' ' && input[itr2]!=0;itr++,itr2+=1) {
@@ -56,19 +57,42 @@ int main (void) {
         if(command[0]=='c' && command[1]=='d' && arg[0] != 0) {
             cd(arg,currentDir);
         }
+        else if (command[0] == 'l' && command[1] =='s') {
+            //ls
+            for(itr = 0; itr<64;itr++) {
+                if(dir[itr*16] == currentDir) {
+                    if(dir[itr*16+1] == 0xFF) { //folder
+                        filename[0] = '/';
+                        for(itr2 = 2;dir[itr*16+itr2] !=0;itr2++) {
+                            filename[itr2-1] = dir[itr*16+itr2]; 
+                        }
+                        printStr(filename);
+                    } else { //file
+                        for(itr2 = 2;dir[itr*16+itr2] !=0;itr2++) {
+                            filename[itr2-2] = dir[itr*16+itr2]; 
+                        }
+                        printStr(filename);
+                    }
+                }
+            }
+        }
         
         else if(command[0] == '.' && command[1] == '/' && command[2]!=0) {
             file = &command[2];
-            exeFile(&currentDir,file,&suc,&newDir);
+            interrupt(0x21,currentDir << 8||0x06,file,segmentAvb*0x1000,&suc);
+            segmentAvb++;
+        }
+        else if( command[0] == '0' && arg[0]==0) {
+            file = &command[0];
+            char specialDir = 0x33; //agggep ae folder spesial "bin"
             if(suc == 1) {
-                interrupt(0x21,currentDir << 8||0x06,file,segmentAvb*0x1000,&suc);
+                interrupt(0x21,specialDir << 8 || 0x06,file,segmentAvb*0x1000,&suc);
                 segmentAvb++;
             }
             else {
                 printStr("\r\nCould not find File\r\n");
             }
         }
-
         else {
             printStr("\r\nInvalid Command \r\n");
         }
@@ -92,8 +116,8 @@ void readSector(char* buffer, int sector) {
 
 void printDir() {
     char printedParent;
-    char cDir[14];
-    clear(cDir,14);
+    char cDir[16];
+    clear(cDir,16);
     if(curParent == 0xFF) {
         printStr("root/");
     }
@@ -157,8 +181,8 @@ void copyStr(char* str1, char* str2) {
 void cd(char* path, char prevParent){
     int i, j, k;
     int length;
-    char np[14];
-    clear(np,14);
+    char np[16];
+    clear(np,16);
     i = 0;
     length = 0;
 
@@ -209,9 +233,9 @@ void cd(char* path, char prevParent){
 
 void exeFile(char* dir,char* file,char* suc, char* newDir) {
     int i, j, length;
-    char temp[14];
+    char temp[16];
     length = 0;
-    clear(temp,14);
+    clear(temp,16);
     for(i = 0; *file != '/' && *file != 0; i++,file+=1) {
         temp[i] = *file;
         length++;
