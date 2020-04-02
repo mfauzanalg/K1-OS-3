@@ -185,20 +185,22 @@ void findFileS(char* path, char parentIndex, int *S) {
   int j;
   int k;
   k = 0;
-  
+  //get dirLen
   for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {
     
     temp[i] = *path;
     k++;
   }
-  path++;
+  if(*path != 0x00) {
+    path+=1;
+  }
   //read dir Sectors
   readSector(dir,0x101);
   readSector(dir+512,0x102);
   //iterate dir
   for ( i = 0; i < 64; i++)
   {
-    //get the parent dir of file
+    //get the parent dir of file and compare it
     if (dir[i*16] == parentIndex)
     {
       //iterating and comparing filename
@@ -253,8 +255,9 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
   }
   *result = 1;
 }
+//checked and clear
 
-void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) {
+void writeDir(char *path, int *sectors, char parentIndex, int* nLength, char* P) {
   char dir[1024];
   char sector[512];
   char map[512];
@@ -263,14 +266,15 @@ void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) 
   int i ;
   int length;
   int j;
-
+  //read sectors
   readSector(map,0x100);
   readSector(dir,0x101);
-  readSector(dir,0x102);
+  readSector(dir+512,0x102);
   readSector(sector,0x103);
-  //fill temp with dir or file name
+
   length = 0;
   clear(temp,15);
+  //saving dirname & dirLen to temp
   for(i = 0; *path != '/' && *path != 0; i++,path+=1) {
     temp[i] = *path;
     length++;
@@ -278,20 +282,21 @@ void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) 
   if(*path!=0) {
     path+=1;
   }
-  //check dir is, file or directory exist or not
+
+  //check dir, is file or directory exist or not on dirSector
   for(i = 0; i < 64; i++) {
     if(dir[i*16] == parentIndex) {
       for(j = 2; j <length + 2 && dir[i*16+j] == temp[j-2]; j++)  {
 
       }
       if(j==length+2) { // is iterator
-        break; //i as index of the directory
+        break; //i as index of the directory in dir sector
       }
     }
   }
-  //if found then recurse into the next dir or file
+  //if found then recurse into the next dir or file 
   if(i!=64) {
-    if(*path != 0){ //if dir
+    if(*path != 0){ //if folder and path not EOF then recurse
       writeDir(path,sector,i,nLength,P);
     }
     else { //if file and its exist
@@ -299,9 +304,10 @@ void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) 
       interrupt(0x21, 0, "File already exists!\r\n", 0,0);
     }
   }
-  //if not found then create
+
+  //if not found then create or throws error
   else {
-    if(*path != 0) { //not found and pointer ends not in the filename which ended by '\0'
+    if(*path != 0) { //not found and pointer ends not in the filename which is ended by '\0'
       (*sectors) = -4; //error folder not valid
       interrupt(0x21, 0, "Folder is not valid!\r\n", 0,0);
     }
@@ -323,11 +329,12 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   //var
   int i,k,itr;
   int space;
+
   //file info
   char filename[15];
   int nameLength;
   char fileParent;
-
+  //read sectors
   readSector(map,0x100);
   readSector(dir,0x101);
   readSector(dir+512,0x102);
@@ -369,7 +376,8 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
     return;
   }
   //dir are available
-  //clear(dir+i*16,16);
+
+  clear(dir+i*16,16);
   dir[i*16] = fileParent;
   dir[i*16+1] = k;
   interrupt(0x21, 0, "awooo", 0,0);
