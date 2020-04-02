@@ -50,15 +50,14 @@ int main (void) {
         }
         if(command[0]=='c' && command[1]=='d' && arg[0] != 0) {
             cd(arg,currentDir);
-
         }
         else if(command[0] == '.' && command[1] == '/' && command[2]!=0) {
             file = &command[2];
             interrupt(0x21,currentDir << 8||0x06,file,segmentAvb*0x1000,&suc);
             segmentAvb++;
         }
-        else if(arg[0]==0) {
-            file = &command[2];
+        else if( command[0] == '/' && arg[0]==0) {
+            file = &command[1];
             exeFile(&currentDir,file,&suc,&newDir);
             if(suc == 1) {
                 interrupt(0x21,newDir << 8 || 0x06,file,segmentAvb*0x1000,&suc);
@@ -164,14 +163,14 @@ void cd(char* path, char prevParent){
     i = 0;
     length = 0;
 
-    
-    if(*path == "." && *(path+1) == "."){
+    printStr(path);
+    printStr("\r\n");
+    if(*path == '.' && *(path+1) == '.'){
         if(currentDir!=0xFF){
             currentDir = dir[i*16];
             path+=length+1;
         }
     }else {
-
         while (path[length] != '/' && path[length] != 0){
             length++;
         }
@@ -181,24 +180,26 @@ void cd(char* path, char prevParent){
         }
         for ( i = 0; i < 64; i++){
             //get the parent dir of file
-            if (dir[i*16] == curParent){
+            if (dir[i*16] == currentDir){
                 //iterating and comparing filename
-                for (j = 2; j < k+2 && dir[i*16+j] == np[j-2]; j++){
-                    //
+                for (j = 2; j < length+2 && dir[i*16+j] == np[j-2]; j++){
                 }
+                    // printStr(*(dir+i*16+j));
+                    // printStr("\r\n")
+                    // printStr(np);
                 //if same
-                if (j == k+2){
+                if (j == length+2){
                     break;
-                }
             //else continue iterating i
+                }
             }
         }
 
         if (i == 64){
-            printStr("bash: cd: ");
-            printStr(path);
-            printStr(": No such file or directory");
-            curParent = prevParent;
+            // printStr("bash: cd: ");
+            // printStr(path);
+            printStr("\r\n: No such file or directory\r\n");
+            currentDir = prevParent;
             
         }else{//ketemu
             currentDir = i;
