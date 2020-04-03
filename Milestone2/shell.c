@@ -27,6 +27,7 @@ int main (void) {
     char newDir;
     char command[128];
     char arg[128];
+    char arg2[128];
     char filename[16];
     int suc;
     while (1)
@@ -36,6 +37,7 @@ int main (void) {
         clear(input,128);
         clear(command,128);
         clear(arg,128);
+        clear(arg2, 128);
         curParent = currentDir;
 
         printDir();
