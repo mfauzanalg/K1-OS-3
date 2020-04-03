@@ -4,6 +4,8 @@
 #include "lib/fileIO.h"
 #include "lib/folderIO.h"
 
+void cls();
+
 int main(void) {
   
   char input[10];
@@ -34,6 +36,7 @@ int main(void) {
         }
         break;
       case '2' :
+        cls();
         handleInterrupt21(0xFF06,"shell",0x3000,&suc);
         break;
       case '3':
@@ -79,6 +82,16 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
   }
 }
 
+void readSector(char* buffer, int sector) 
+{
+  interrupt(0x13, 0x201, buffer, div(sector, 36) * 0x100 + mod(sector, 18) + 1, mod(div(sector, 18), 2) * 0x100);
+}
+
+void writeSector(char* buffer, int sector) 
+{
+  interrupt(0x13, 0x301, buffer, div(sector, 36) * 0x100 + mod(sector, 18) + 1, mod(div(sector, 18), 2) * 0x100);
+}
+
 
 void executeProgram(char *filename, int segment, int *success, char parentIndex){
   char buffer[10240];
@@ -95,4 +108,11 @@ void executeProgram(char *filename, int segment, int *success, char parentIndex)
   }else{
     interrupt(0x21, 0, "File not found!\r\n", 0, 0);
   }
+}
+
+void cls() {
+  int i;
+  for (i = 0; i < 10; i++) {
+      printString( "\n\n\n\n\n\n\n\n\n\n" );
+    }
 }
