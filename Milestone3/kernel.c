@@ -1,8 +1,6 @@
 #include "interrupt.h"
-#include "math.h"
-
-// Funsgi Tambahan
-void bootlogo();
+#include "lib/math.h"
+#include "lib/teks.h"
 
 int main(void) {
   
@@ -42,20 +40,9 @@ int main(void) {
         handleInterrupt21(0XFF05, buffer, "bab.txt", &suc);
         handleInterrupt21(0XFF04, buffer, "bab.txt", &suc);
         printString(buffer);
-  }
     }
+  }
       
-}
-
-void bootlogo(){
-    printString(" __  __        _____  ____  _        _____  _ _          _\r\n");   
-    // printString("|  \\/  |      / ____|/ __ \\| |      |  __ \\(_) |        | |\r\n");  
-    // printString("| \\  / |_   _| (___ | |  | | |      | |__) |_| |__   ___| |_\r\n"); 
-    // printString("| |\\/| | | | |\\___ \\| |  | | |      |  _  /| | '_ \\ / _ \\ __|\r\n");
-    // printString("| |  | | |_| |____) | |__| | |____  | | \\ \\| | |_) |  __/ |_\r\n"); 
-    // printString("|_|  |_|\\__, |_____/ \\___\\_\\______| |_|  \\_\\_|_.__/ \\___|\\__|\r\n");
-    // // printString("         __/ |\r\n");                                               
-    // // printString("        |___/\r\n");   
 }
 
 
@@ -91,50 +78,50 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX){
 }
 
 
-void printString(char *string) {
-  int i = 0;
-  while (*(string+i)!='\0')
-  {
-    interrupt(16,0XE00 + *(string+i),0,0,0); //using vector table 10h and using 0Eh
-    i++;
-  }
-}
+// void printString(char *string) {
+//   int i = 0;
+//   while (*(string+i)!='\0')
+//   {
+//     interrupt(16,0XE00 + *(string+i),0,0,0); //using vector table 10h and using 0Eh
+//     i++;
+//   }
+// }
 
 
-void readString (char *string) {
-  int i = 0;
-  int AH;
-  int AL;
-  int AX;
-  char backspace[4];
-  char enter[3];
-  backspace[0] = '\b';
-  backspace[1] = ' ';
-  backspace[2] = '\b';
-  backspace[3] = '\0';
-  enter[0] = '\r';
-  enter[1] = '\n';
-  enter[2] = '\0';
-  do
-  {
-    string[i] = interrupt(22,0,0,0,0);//interrut using 0x17 vector table and 0x0 AH or read string 
-    if(string[i]=='\b' && i>0) 
-    {
-      printString(backspace); //delete single existing char before
-      i--; //if 1 arr of char deleted num of elmt --
-    }
-    else if(string[i] == '\b') {
+// void readString (char *string) {
+//   int i = 0;
+//   int AH;
+//   int AL;
+//   int AX;
+//   char backspace[4];
+//   char enter[3];
+//   backspace[0] = '\b';
+//   backspace[1] = ' ';
+//   backspace[2] = '\b';
+//   backspace[3] = '\0';
+//   enter[0] = '\r';
+//   enter[1] = '\n';
+//   enter[2] = '\0';
+//   do
+//   {
+//     string[i] = interrupt(22,0,0,0,0);//interrut using 0x17 vector table and 0x0 AH or read string 
+//     if(string[i]=='\b' && i>0) 
+//     {
+//       printString(backspace); //delete single existing char before
+//       i--; //if 1 arr of char deleted num of elmt --
+//     }
+//     else if(string[i] == '\b') {
       
-    }
-    else
-    {
-      //print on TTY
-      interrupt(16,0XE00 + *(string+i),0,0,0);
-      i++;
-    }
-  } while (string[i-1]!='\r' ); //end read if enter key pressed
-  printString(enter);
-}
+//     }
+//     else
+//     {
+//       //print on TTY
+//       interrupt(16,0XE00 + *(string+i),0,0,0);
+//       i++;
+//     }
+//   } while (string[i-1]!='\r' ); //end read if enter key pressed
+//   printString(enter);
+// }
 
 void readSector(char* buffer, int sector) 
 {
