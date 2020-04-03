@@ -1,5 +1,14 @@
 #include "fileIO.h"
 
+void readSector(char* buffer, int sector) 
+{
+  interrupt(0x13, 0x201, buffer, div(sector, 36) * 0x100 + mod(sector, 18) + 1, mod(div(sector, 18), 2) * 0x100);
+}
+
+void writeSector(char* buffer, int sector) 
+{
+  interrupt(0x13, 0x301, buffer, div(sector, 36) * 0x100 + mod(sector, 18) + 1, mod(div(sector, 18), 2) * 0x100);
+}
 
 void clear(char *buffer, int length){
   int i;
@@ -125,6 +134,69 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   writeSector(sector,0x103);
 }
 
+void deleteFile(char* path, int *result, char parenIndex){
+  char map[512];
+  char dir[1024];
+  char sector[512];
+  char temp[15];
+  char S;
+  int i,j,k,l;
+
+  // read all sectors
+  readSector(map,0x100);
+  readSector(dir,0x101);
+  readSector(dir+512,0x102);
+  readSector(sector,0x103);
+
+  findFileS(path, parenIndex, &S);
+  //not found
+  if (S == 0xFF){
+    *result = -1;
+    return;
+  }
+  else{ //succ
+    //clear
+
+    for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {  
+      temp[i] = *path;
+      k++;
+    }
+
+    for (i = 0; i < 64; i++){
+      //get the parent dir of file
+      if (dir[i*16] == parenIndex){
+        //iterating and comparing filename
+        for ( j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++){}
+        //if same
+        if(j == k+2) {
+          break;
+        }
+        //else continue iterating i
+      }
+    }
+
+    //clear sector
+    for (l = 0; l < 16; l++){
+      sector[S*16 + l] = 0x00;
+    }
+
+    //clear dir and map
+    for (l = 0; l < 16; l++){
+      map[dir[i*16 + l]] = 0x00;
+      dir[i*16 + l] = 0x00;
+    }
+
+    // write hasil clear ke sectors
+    writeSector(map,0x100);
+    writeSector(dir,0x101);
+    writeSector(dir+512,0x102);
+    writeSector(sector,0x103);
+    *result = 1;
+    return;
+  }
+
+}
+
 void findFileS(char* path, char parentIndex, int *S) {
   char dir[1024];
   char temp[15];
@@ -160,6 +232,7 @@ void findFileS(char* path, char parentIndex, int *S) {
       //else continue iterating i
     }
   }
+
   //not Found
   if(i == 64) {
     interrupt(0x21, 0, "File Not Found heheheh\r\n", 0, 0);
