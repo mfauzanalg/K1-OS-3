@@ -1,11 +1,13 @@
 //declare function
 int printStr(char* str);
 void readSector(char* buffer, int sector);
+void writeSector(char* buffer, int sector);
 void printDir();
 void getInput(char* buffer);
 void clear(char* bufffer, int size);
 void split(char* string, char splitter, char result[64][128], int *count);
 void cd(char* path, char prevParent);
+void mkdir(char*path,char parent);
 int len(char* str);
 void exeFile(char* dir,char* file,char* suc,char* newDir);
 void copyStr(char* str1, char* str2);
@@ -56,6 +58,9 @@ int main (void) {
 
         if(command[0]=='c' && command[1]=='d' && arg[0] != 0) {
             cd(arg,currentDir);
+        }
+        else if(command[0]=='m' && command[1]=='k' && command[2]=='d' && command[3]=='i' && command[4]=='r' && arg[0] != 0) {
+            mkdir(arg,currentDir);
         }
         else if (command[0] == 'l' && command[1] =='s') {
             //ls
@@ -114,6 +119,10 @@ int printStr(char* str) {
 
 void readSector(char* buffer, int sector) {
     interrupt(0x21,0x0002,buffer,sector,0);
+}
+
+void writeSector(char* buffer, int sector) {
+    interrupt(0x21,0x0003,buffer,sector,0);
 }
 
 void printDir() {
@@ -263,4 +272,78 @@ void exeFile(char* dir,char* file,char* suc, char* newDir) {
     else { //not found
         *suc = -1;
     }
+}
+
+void mkdir(char* path, char parent) {
+    int i, j, k;
+    int length;
+    char temp[16];
+    char np[16];
+    clear(np,16);
+    clear(temp,16);
+    length = 0;
+    //check folder is exist or not in CurrentDirectory(parent)
+    //len name && copy name
+    for (i = 0; *path != '/' && *path != '\r'; i++,path+=1){
+        np[i] = *path;
+    }
+    length = i;
+
+    for (i = 0; i < 64; i++)
+    {
+        //if some file has parent == 'parent' & is a folder
+        if(dir[i*16] == parent && dir[i*16+1] == 0xFF) {
+            //compare filename
+            for (j = 2; j < length+2 && dir[i*16+j] == np[j-2]; j++){
+            }
+            //if same
+            if(j == length + 2) {
+                if(*path != '\r') { //same and path ended in '/' then recurse
+                    path+=1;
+                    mkdir(path,dir[i*16]); //recurse and change dir
+                } else { //same and folder exist and path ended in ''
+                    printStr("\r\n mkdir : Cannot create directory, Folder Exist \r\n");
+                    return;
+                }
+            }
+            //else continue iterating
+        }
+    }
+    //folder aren't exist
+    if(*path != '\r') { //path ended in '/'
+        printStr("\r\n No Such File or Directory \r\n");
+        return;
+    }
+    else { //path ended in''
+        //create one
+        temp[0] = parent; //assign parent of this folder
+        temp[1] = 0xFF; //folder flag
+        for (j = 2; j < length+2; j++){
+            temp[j] = np[j-2];
+        }
+        //search empty dir
+        for(i = 0; i < 64; i++) {
+            //search empty space
+            if(dir[i*16]==0 && dir[i*16+1]==0 && dir[i*16+2]==0) {
+                break;
+            }
+        }
+        //if there is no space left
+        if(i == 64) {
+            printStr("\r\n mkdir : Insufficent Space\r\n");
+            return;
+        }
+        else {
+            for(k = 0; k<2;k++) {
+                dir[i*16+k] = temp[k];
+            }
+            for(k = 0;k<length;k++) {
+                dir[i*16+2+k] = np[k];
+            }
+            printStr(dir+i*16+2);
+            writeSector(dir,0x101);
+            writeSector(dir+512,0x102);
+        }
+    }
+   
 }
