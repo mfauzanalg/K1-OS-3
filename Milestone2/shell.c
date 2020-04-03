@@ -266,3 +266,74 @@ void exeFile(char* dir,char* file,char* suc, char* newDir) {
         *suc = -1;
     }
 }
+
+void mv(char* src, char* dest, char srcParent, char destParent){
+int i, j, k;
+    int lengthsrc;
+    int lengthdest;
+    char np[16];
+    char np2[16];
+    clear(np2, 16);
+    clear(np,16);
+    i = 0;
+    lengthsrc = 0;
+    lengthdest = 0;
+
+    for (i = 0; *src != '/' && *src != '\r'; i++,src+=1){
+        np[i] = *src;
+    }
+    lengthsrc = i;
+    
+    for (i = 0; *dest != '/' && *dest != '\r'; i++, dest+=1){
+        np2[i] = *dest;
+    }
+    lengthdest = i;
+    
+    for ( i = 0; i < 64; i++){
+        //get the parent dir of file
+        if (dir[i*16] == srcParent){
+            //iterating and comparing filename
+            for (j = 2; j < lengthsrc+2 && dir[i*16+j] == np[j-2]; j++){
+            }
+            //if same
+            if (j == lengthsrc+2){
+                break;
+            //else continue iterating i
+            }
+        }
+    }
+    for ( k = 0; k < 64; k++){
+        //get the parent dir of file
+        if (dir[k*16] == srcParent){
+            //iterating and comparing filename
+            for (j = 2; j < lengthsrc+2 && dir[i*16+j] == np[j-2]; j++){
+            }
+            //if same
+            if (j == lengthsrc+2){
+                break;
+            //else continue iterating i
+            }
+        }
+    }
+    if (i == 64){
+        printStr("\r\nNo such source file or directory\r\n");
+        return;
+    }else if( k == 64){
+        printStr("\r\nNo such dest file or directory\r\n");
+        return;
+    }else{//ketemu
+        srcParent = i;
+        destParent = k;
+        if (*src !='\r' || *dest != '\r'){
+            if(*src != '\r'){
+                src+=1;
+            }
+            if(*dest != '\r'){
+                dest+=1;
+            }
+            mv(src, dest, srcParent, destParent);
+        }else{
+            dir[destParent*16] = dir[srcParent*16];
+        }
+    }
+}
