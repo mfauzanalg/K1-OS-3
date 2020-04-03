@@ -29,6 +29,7 @@ int main (void) {
     char newDir;
     char command[128];
     char arg[128];
+    char arg2[128];
     char filename[16];
     int suc;
     while (1)
@@ -53,6 +54,13 @@ int main (void) {
             itr2++; //skip white space
             for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
                 arg[itr] = input[itr2];
+            }
+        }
+
+        if(input[itr2] != 0) {
+            itr2++; //skip white space
+            for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
+                arg2[itr] = input[itr2];
             }
         }
 
