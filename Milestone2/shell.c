@@ -31,15 +31,15 @@ int main (void) {
     int suc;
     while (1)
     {
+        readSector(dir,0x101);
+        readSector(dir+512,0x102);
         clear(input,128);
         clear(command,128);
         clear(arg,128);
-        readSector(dir,0x101);
-        readSector(dir+512,0x102);
         curParent = currentDir;
 
         printDir();
-        printStr("\b$ ");
+        printStr("$ ");
 
         interrupt(0x21,0x1,input,0,0);
         //input command
@@ -118,13 +118,13 @@ void printDir() {
     char cDir[16];
     clear(cDir,16);
     if(curParent == 0xFF) {
-        printStr("root/");
+        printStr("root");
     }
     else {
         printedParent = curParent;
         curParent = dir[curParent*16];
         printDir();
-        printStr("/ ");
+        printStr("/");
         copyStr(cDir,(dir+printedParent*16+2));
         printStr(cDir);
     }
@@ -187,20 +187,19 @@ void cd(char* path, char prevParent){
 
     printStr(path);
     printStr("\r\n");
-    if(*path == '.' && *(path+1) == '.' && *(path+2) == 0){
+    if(*path == '.' && *(path+1) == '.' && *(path+2) == '\r'){
+        printStr("JANCOK\r\n");
         if(currentDir!=0xFF){
             currentDir = dir[currentDir*16];
         }
+        return;
     }
     else {
         //len name
-        while (path[length] != '/' && path[length] != 0){
-            length++;
-        }
-
-        for (i = 0; i < length; i++,path+=1){
+        for (i = 0; *path != '/' && *path != '\r'; i++,path+=1){
             np[i] = *path;
         }
+        length = i;
 
         for ( i = 0; i < 64; i++){
             //get the parent dir of file
@@ -221,7 +220,7 @@ void cd(char* path, char prevParent){
             
         }else{//ketemu
             currentDir = i;
-            if (*path !='\0'){
+            if (*path !='\r'){
                 path+=1;
                 cd(path, prevParent);
             }//else = done
