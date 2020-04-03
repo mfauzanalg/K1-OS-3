@@ -85,17 +85,13 @@ int main (void) {
             interrupt(0x21,currentDir << 8||0x06,file,segmentAvb*0x1000,&suc);
             segmentAvb++;
         }
-        // else if( command[0] == '0' && arg[0]==0) {
-        //     file = &command[0];
-        //     char specialDir = 0x33; //agggep ae folder spesial "bin"
-        //     if(suc == 1) {
-        //         interrupt(0x21,specialDir << 8 || 0x06,file,segmentAvb*0x1000,&suc);
-        //         segmentAvb++;
-        //     }
-        //     else {
-        //         printStr("\r\nCould not find File\r\n");
-        //     }
-        // }
+        else if( command[0] == '0' && arg[0]==0) {
+            file = &command[0];
+            // char specialDir = 0x33;
+            interrupt(0x21,0x33 << 8 || 0x06,file,segmentAvb*0x1000,&suc);
+            segmentAvb++;
+            
+        }
         else {
             printStr("\r\nInvalid Command \r\n");
         }
