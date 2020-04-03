@@ -59,6 +59,7 @@ int main (void) {
         }
         else if (command[0] == 'l' && command[1] =='s') {
             //ls
+            printStr("\r\n");
             for(itr = 0; itr<64;itr++) {
                 if(dir[itr*16] == currentDir) {
                     clear(filename,16);
@@ -68,16 +69,18 @@ int main (void) {
                             filename[itr2-1] = dir[itr*16+itr2]; 
                         }
                         printStr(filename);
-                        printStr("\r\n");
+                        printStr("\t\t\t\t\t ");
                     } else { //file
                         for(itr2 = 2;dir[itr*16+itr2] !=0;itr2++) {
                             filename[itr2-2] = dir[itr*16+itr2]; 
                         }
                         printStr(filename);
-                        printStr("\r\n");
+                        printStr("\t\t\t\t\t ");
                     }
                 }
             }
+                printStr("\r\n");
+                printStr("\r\n");
         }
         
         else if(command[0] == '.' && command[1] == '/' && command[2]!=0) {
@@ -185,10 +188,7 @@ void cd(char* path, char prevParent){
     i = 0;
     length = 0;
 
-    printStr(path);
-    printStr("\r\n");
     if(*path == '.' && *(path+1) == '.' && *(path+2) == '\r'){
-        printStr("JANCOK\r\n");
         if(currentDir!=0xFF){
             currentDir = dir[currentDir*16];
         }

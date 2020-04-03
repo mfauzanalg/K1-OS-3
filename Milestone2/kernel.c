@@ -5,6 +5,7 @@
 int mod(int a,int b);
 int div (int a, int b);
 void bootlogo();
+void cls();
 
 int main(void) {
   
@@ -36,6 +37,7 @@ int main(void) {
         }
         break;
       case '2' :
+        cls();
         handleInterrupt21(0xFF06,"shell",0x3000,&suc);
         break;
       case '3':
@@ -430,4 +432,10 @@ void executeProgram(char *filename, int segment, int *success, char parentIndex)
   }else{
     interrupt(0x21, 0, "File not found!\r\n", 0, 0);
   }
+}
+void cls() {
+  int i;
+  for (i = 0; i < 10; i++) {
+      printString( "\n\n\n\n\n\n\n\n\n\n" );
+    }
 }
