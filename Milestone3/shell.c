@@ -1,16 +1,15 @@
 //declare function
 int printStr(char* str);
-void readSector(char* buffer, int sector);
-void writeSector(char* buffer, int sector);
-void printDir();
 void getInput(char* buffer);
-void clear(char* bufffer, int size);
 void split(char* string, char splitter, char result[64][128], int *count);
-void cd(char* path, char prevParent);
-void mkdir(char*path,char parent);
+void clear(char* bufffer, int size);
 int len(char* str);
-void exeFile(char* dir,char* file,char* suc,char* newDir);
+void printDir();
+void cd(char* path, char prevParent);
 void copyStr(char* str1, char* str2);
+void readSector(char* buffer, int sector);
+void exeFile(char* dir,char* file,char* suc,char* newDir);
+void mkdir(char*path,char parent);
 //var global
 char dir[1024];
 char input[128];
@@ -125,13 +124,14 @@ int printStr(char* str) {
     interrupt(0x21,0,print,0,0);
 }
 
+void writeSector(char* buffer, int sector) {
+    interrupt(0x21,0x0003,buffer,sector,0);
+}
+
 void readSector(char* buffer, int sector) {
     interrupt(0x21,0x0002,buffer,sector,0);
 }
 
-void writeSector(char* buffer, int sector) {
-    interrupt(0x21,0x0003,buffer,sector,0);
-}
 
 void printDir() {
     char printedParent;
@@ -348,7 +348,6 @@ void mkdir(char* path, char parent) {
             for(k = 0;k<length;k++) {
                 dir[i*16+2+k] = np[k];
             }
-            printStr(dir+i*16+2);
             writeSector(dir,0x101);
             writeSector(dir+512,0x102);
         }
