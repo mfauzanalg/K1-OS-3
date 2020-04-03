@@ -61,6 +61,7 @@ int main (void) {
             //ls
             for(itr = 0; itr<64;itr++) {
                 if(dir[itr*16] == currentDir) {
+                    clear(filename,16);
                     if(dir[itr*16+1] == 0xFF) { //folder
                         filename[0] = '/';
                         for(itr2 = 2;dir[itr*16+itr2] !=0;itr2++) {
