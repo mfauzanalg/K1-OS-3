@@ -1,4 +1,4 @@
-echo "Rebuilding...."
+echo "Rebuilding"
 nasm bootloader.asm -o bootloader
 
 dd if=bootloader of=system.img bs=512 count=1 conv=notrunc
@@ -10,6 +10,7 @@ dd if=dir.img of=system.img bs=512 count=2 seek=257 conv=notrunc
 dd if=sectors.img of=system.img bs=512 count=1 seek=259 conv=notrunc
 
 bcc -ansi -c -o kernel.o kernel.c
+bcc -ansi -c -o lib/math.o lib/math.c
 
 nasm -f as86 kernel.asm -o kernel_asm.o
 
