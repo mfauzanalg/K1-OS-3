@@ -251,6 +251,7 @@ void cat(char * path, char curDir) {
   char map[512];
   char dir[1024];
   char sector[512];
+  char tempSec[512];
   char temp[15];
   char S;
   int i,j,k,l;
@@ -270,7 +271,8 @@ void cat(char * path, char curDir) {
 
   for (j = 0; j < 16; j++){
     if(sector[S*16+j] != 0) {
-      prnString(sector[S*16+j]*512);
+      readSector(tempSec,sector[S*16+j]);
+      prnString(tempSec);
     }
   }
 }
