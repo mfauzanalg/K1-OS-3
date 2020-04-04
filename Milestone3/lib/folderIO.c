@@ -75,26 +75,117 @@ void deleteDirectory(char *path, int *success, char parentIndex){
   readSector(dir+512,0x102);
   readSector(sector,0x103);
 
-  findFileS(path, parentIndex, &S);
 
-  if (S != 0xFF){
-    printString("failed to remove : Not a directory");
-    *success = -1;
-    return;
+
+
+  // succ = 1;
+  // j = 0;
+  // for(i = 0; *path != '/' && *path != 0x00; i++,path+=1){  
+  //   temp[i] = *path;
+  //   k++;
+  // }
+
+  // for (i = 0; i < 64; i++){
+  //   //get the parent dir of file
+  //   if (dir[i*16] == parentIndex){
+  //     //iterating and comparing filename
+  //     for (j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++){}
+  //     //if same
+  //     if(j == k+2) {
+  //       break;
+  //     }
+  //     //else continue iterating i
+  //   }
+  // }
+
+  // // Target not found
+  // if(i == 64) {
+  //   printString("cannot remove : No such file");
+  //   return;
+  // }
+  // // Found
+  // findFileS(path, parentIndex, &S);
+  // if (S != 0xFF){
+  //   printString("cannot remove : target is not a directory");
+  //   return;
+  // }
+
+  // findFileS(path, parentIndex, &S);
+
+  // if (S != 0xFF){
+  //   printString("failed to remove : Not a directory");
+  //   *success = -1;
+  //   return;
+  // }
+
+  // succ = 1;
+  // j = 0;
+  // for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {  
+  //     temp[i] = *path;
+  //     k++;
+  //   }
+
+  // for (i = 0; i < 64; i++){
+  //   //get the parent dir of file
+  //   if (dir[i*16] == parentIndex){
+  //     //iterating and comparing filename
+  //     for (j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++){}
+  //     //if same
+  //     if(j == k+2) {
+  //       break;
+  //     }
+  //     //else continue iterating i
+  //   }
+  // }
+
+  // //folder ada di baris ke [i*16] <- ini adalah indeks foler di dir
+  // while (j < 64 && succ){
+  //   if (dir[j*16 + 1] == dir[i*16]){ // kalau ada file/folder di dalam folder yang ingin dihapus
+  //     succ = -1;
+  //   }
+  //   j++;
+  // }
+
+  // if (succ == -1){
+  //   printString("failed to remove : Directory not empty");
+  //   *success = -1;
+  //   return;
+  // }
+
+  // if (j == 64){   // berarti si foldernya kosong bisa dihapus
+    
+  // }
+
+}
+
+
+void findDirS(char* path, char parentIndex, int *S) {
+  char dir[1024];
+  char temp[15];
+  int i;
+  int j;
+  int k;
+  k = 0;
+  
+  for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {
+    temp[i] = *path;
+    k++;
   }
-
-  succ = 1;
-  j = 0;
-  for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {  
-      temp[i] = *path;
-      k++;
-    }
-
-  for (i = 0; i < 64; i++){
+  path++;
+  //read dir Sectors
+  readSector(dir,0x101);
+  readSector(dir+512,0x102);
+  //iterate dir
+  for ( i = 0; i < 64; i++)
+  {
     //get the parent dir of file
-    if (dir[i*16] == parentIndex){
+    if (dir[i*16] == parentIndex)
+    {
       //iterating and comparing filename
-      for (j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++){}
+      for ( j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++)
+      {
+
+      }
       //if same
       if(j == k+2) {
         break;
@@ -103,22 +194,18 @@ void deleteDirectory(char *path, int *success, char parentIndex){
     }
   }
 
-  //folder ada di baris ke [i*16] <- ini adalah indeks foler di dir
-  while (j < 64 && succ){
-    if (dir[j*16 + 1] == dir[i*16]){ // kalau ada file/folder di dalam folder yang ingin dihapus
-      succ = -1;
-    }
-    j++;
-  }
-
-  if (succ == -1){
-    printString("failed to remove : Directory not empty");
-    *success = -1;
+  //not Found
+  if(i == 64) {
+    interrupt(0x21, 0, "Folder Not Found heheheh\r\n", 0, 0);
+    (*S) == 0xFFFF;
     return;
   }
-
-  if (j == 64){   // berarti si foldernya kosong bisa dihapus
-    
+  //found and i*16 is the address
+  if(dir[i*16+1] == 0xFF) {
+    //continue search S
+    findFileS(path,i,S);
   }
-
+  else {
+    (*S) = dir[i*16+1];
+  }
 }
