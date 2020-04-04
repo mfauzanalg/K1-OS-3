@@ -1,4 +1,5 @@
 #include "folderIO.h"
+#include "teks.h"
 
 void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) {
   char dir[1024];
@@ -12,7 +13,7 @@ void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) 
 
   readSector(map,0x100);
   readSector(dir,0x101);
-  readSector(dir,0x102);
+  readSector(dir+512,0x102);
   readSector(sector,0x103);
   //fill temp with dir or file name
   length = 0;
@@ -58,4 +59,66 @@ void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) 
       (*P) = parentIndex; // parent index of the file or the root
     }
   }
+}
+
+void deleteDirectory(char *path, int *success, char parentIndex){
+  char map[512];
+  char dir[1024];
+  char sector[512];
+  int i,j,k,l;
+  int succ;
+  char temp[15];
+  char S;
+
+  readSector(map,0x100);
+  readSector(dir,0x101);
+  readSector(dir+512,0x102);
+  readSector(sector,0x103);
+
+  findFileS(path, parentIndex, &S);
+
+  if (S != 0xFF){
+    printString("failed to remove : Not a directory");
+    *success = -1;
+    return;
+  }
+
+  succ = 1;
+  j = 0;
+  for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {  
+      temp[i] = *path;
+      k++;
+    }
+
+  for (i = 0; i < 64; i++){
+    //get the parent dir of file
+    if (dir[i*16] == parentIndex){
+      //iterating and comparing filename
+      for (j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++){}
+      //if same
+      if(j == k+2) {
+        break;
+      }
+      //else continue iterating i
+    }
+  }
+
+  //folder ada di baris ke [i*16] <- ini adalah indeks foler di dir
+  while (j < 64 && succ){
+    if (dir[j*16 + 1] == dir[i*16]){ // kalau ada file/folder di dalam folder yang ingin dihapus
+      succ = -1;
+    }
+    j++;
+  }
+
+  if (succ == -1){
+    printString("failed to remove : Directory not empty");
+    *success = -1;
+    return;
+  }
+
+  if (j == 64){   // berarti si foldernya kosong bisa dihapus
+    
+  }
+
 }
