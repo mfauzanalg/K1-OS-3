@@ -69,14 +69,14 @@ void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) 
 }
 
 void deleteDirectory(char *path, int *result, char parentIndex){
-  char map[512];
   char dir[1024];
-  char sector[512];
   int i,j;
   int length;
   char temp[15];
   char S;
   int found;
+  readSector(dir,0x101);
+  readSector(dir+512,0x102);
   //save filename and parse,
   for(i = 0;*path!='/' && *path != '\r';i++,path+=1) {
     temp[i] = *path;
@@ -95,13 +95,13 @@ void deleteDirectory(char *path, int *result, char parentIndex){
     }
   }
   if(i == 64) { //not found then throw error
-    prnStr("cannot remove : No Such Dir");
+    prnStr("\r\ncannot remove : No Such Dir\r\n");
     return;
   }
   else { //found
     if(*path == '/') { //parse haven't done yet
       if(dir[i*16+1] != 0xFF) { //not a folder
-        prnStr("cannot remove : Target is not a folder");
+        prnStr("\r\ncannot remove : Target is not a folder\r\n");
         return;
       }
       else { //folder and parse haven't done yet
@@ -111,7 +111,7 @@ void deleteDirectory(char *path, int *result, char parentIndex){
     }
     else { //path == \r' parse done!
       if(dir[i*16+1] != 0xFF) { //not a folder
-        prnStr("cannot remove : Target is not a folder");
+        prnStr("\r\ncannot remove : Target is not a folder\r\n");
         return;
       }
       else { //valid folder with parent i
@@ -122,7 +122,7 @@ void deleteDirectory(char *path, int *result, char parentIndex){
           }
         }
         if(j==64) { //folder doesnt contains anything
-          clear(dir[i*16],16);
+          clear(dir+i*16,16);
           writeSector(dir,0x101);
           writeSector(dir+512,0x102);
           *result = 1;

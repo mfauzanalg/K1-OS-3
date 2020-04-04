@@ -78,6 +78,9 @@ int main (void) {
         else if(command[0]=='m' && command[1]=='k' && command[2]=='d' && command[3]=='i' && command[4]=='r' && arg[0] != 0) {
             mkdir(arg,currentDir);
         }
+        else if(command[0]=='r' && command[1]=='m' && command[2]=='d' && command[3]=='i' && command[4]=='r' && arg[0] != 0) {
+            deleteDirectory(arg, &suc, currentDir);
+        }
         else if(command[0]=='m' && command[1]=='v' && arg[0] != 0 && arg2[0] != 0){
             mv(arg, arg2, currentDir, currentDir);
         }
