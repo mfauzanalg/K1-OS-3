@@ -3,6 +3,7 @@ int printStr(char* str);
 void getInput(char* buffer);
 void split(char* string, char splitter, char result[64][128], int *count);
 void clear(char* bufffer, int size);
+void mv(char* src, char* dest, char srcParent, char destParent);
 int len(char* str);
 void printDir();
 void cd(char* path, char prevParent);
@@ -45,20 +46,20 @@ int main (void) {
 
         interrupt(0x21,0x1,input,0,0);
         //input command
-        for(itr = 0,itr2 = 0; input[itr2] != ' ' && input[itr2]!=0;itr++,itr2+=1) {
+        for(itr = 0,itr2 = 0; input[itr2] != ' ' && input[itr2] != '\r';itr++,itr2+=1) {
             command[itr] = input[itr2];
         }
 
         if(input[itr2] != 0) {
             itr2++; //skip white space
-            for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
+            for(itr = 0; input[itr2] != ' ' && input[itr2] != '\r'; itr++,itr2++) {
                 arg[itr] = input[itr2];
             }
         }
 
         if(input[itr2] != 0) {
             itr2++; //skip white space
-            for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
+            for(itr = 0; input[itr2] != ' ' && input[itr2] != '\r'; itr++,itr2++) {
                 arg2[itr] = input[itr2];
             }
         }
