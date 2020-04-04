@@ -109,7 +109,6 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   //clear(dir+i*16,16);
   dir[i*16] = fileParent;
   dir[i*16+1] = k;
-  interrupt(0x21, 0, "awooo", 0,0);
   for(itr = 2; itr < nameLength + 2;itr++) {
     dir[i*16+itr] = *path; //naming the file
     path++;

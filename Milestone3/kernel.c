@@ -93,7 +93,6 @@ void executeProgram(char *filename, int segment, int *success, char parentIndex)
     {
       putInMemory(segment, i, buffer[i]);
     }
-    printString("\r\nMasuk\r\n");
     launchProgram(segment);
   }else{
     interrupt(0x21, 0, "File not found!\r\n", 0, 0);
