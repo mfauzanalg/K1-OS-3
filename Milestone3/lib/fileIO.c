@@ -201,7 +201,6 @@ void findFileS(char* path, char parentIndex, int *S) {
     temp[i] = *path;
     k++;
   }
-  path++;
   //read dir Sectors
   readSector(dir,0x101);
   readSector(dir+512,0x102);
@@ -233,9 +232,15 @@ void findFileS(char* path, char parentIndex, int *S) {
   //found and i*16 is the address
   if(dir[i*16+1] == 0xFF) {
     //continue search S
+    path+=1;
     findFileS(path,i,S);
   }
   else {
+    if(*path == '/') { //ketemu file sebelum parsenya berakhir
+      interrupt(0x21, 0, "Directory isn't Valid\r\n", 0, 0);
+      (*S) == 0xFF;
+      return;
+    }
     (*S) = dir[i*16+1];
   }
 }
