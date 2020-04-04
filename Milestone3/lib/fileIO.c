@@ -194,6 +194,7 @@ void deleteFile(char* path, char parentIndex){
 void findFileS(char* path, char parentIndex, int *S) {
   char dir[1024];
   char temp[15];
+  char tempSec[512];
   int i;
   int j;
   int k;
