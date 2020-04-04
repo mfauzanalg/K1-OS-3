@@ -66,115 +66,66 @@ void deleteDirectory(char *path, int *result, char parentIndex){
   char dir[1024];
   char sector[512];
   int i,j;
-  int succ;
+  int length;
   char temp[15];
   char S;
   int found;
-
-  readSector(map,0x100);
-  readSector(dir,0x101);
-  readSector(dir+512,0x102);
-  readSector(sector,0x103);
-
-  findDirS(path, parentIndex, &S);
-
-  // Target not found or target is a dir
-  if (S == 0xFFFF){
-    printString("cannot remove : No such file");
-    *result = -1;
-    return;
-  }
-  if (S == 0xBBBB){
-    printString("cannot remove : Target is not Dir");
-    *result = -1;
-    return;
-  }
-  //S adalah indeks dari folder (di dir) 
-
-  // Found
-  // Cari tau apakah folder kosong atau tidak
-  for (i = 0; i < 64; i++){
-    // Dir is not empty
-    if (dir[16*i] == S){
-      printString("cannot remove : Dir is not empty");
-      return;
-    }
-    // else Dir is empty
-  }
-
-  //clear dir and map
-  for (j = 0; j < 16; j++){
-    map[dir[S*16 + j]] = 0x00;
-    dir[S*16 + j] = 0x00;
-  }
-
-  // write hasil clear ke sectors
-  writeSector(map,0x100);
-  writeSector(dir,0x101);
-  writeSector(dir+512,0x102);
-  writeSector(sector,0x103);
-  *result = 1;
-  return;
-}
-
-
-void findDirS(char* path, char parentIndex, int *S) {
-  char dir[1024];
-  char temp[15];
-  int i;
-  int j;
-  int k;
-  k = 0;
-  
-  for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {
+  //save filename and parse,
+  for(i = 0;*path!='/' && *path != '\r';i++,path+=1) {
     temp[i] = *path;
-    k++;
   }
-  //read dir Sectors
-  readSector(dir,0x101);
-  readSector(dir+512,0x102);
-  //iterate dir
-  for ( i = 0; i < 64; i++)
-  {
-    //get the parent dir of file
-    if (dir[i*16] == parentIndex)
-    {
-      //iterating and comparing filename
-      for ( j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++)
-      {
-
+  length = i;
+  //find it on dir
+  for(i = 0;i<64;i++) {
+    //check dir with same parentFlag
+    if(dir[i*16] == parentIndex) {
+      for(j = 2; j<length+2 && dir[i*16+j] == temp[j-2];j++) {
       }
-      //if same
-      if(j == k+2) {
+      if(j==length+2) {
+        //same dir found
         break;
       }
-      //else continue iterating i
     }
   }
-
-  //not Found
-  if(i == 64) {
-    interrupt(0x21, 0, "Folder Not Found heheheh\r\n", 0, 0);
-    (*S) == 0xFFFF;
+  if(i == 64) { //not found then throw error
+    printString("cannot remove : No Such Dir");
     return;
   }
-  //found and i*16 is the address
-  if(dir[i*16+1] == 0xFF) {
-    //continue search S
-    path+=1;
-    if (*path == 0x00){ //path udh abis
-      *S = i;
-      return;
+  else { //found
+    if(*path == '/') { //parse haven't done yet
+      if(dir[i*16+1] != 0xFF) { //not a folder
+        printString("cannot remove : Target is not a folder");
+        return;
+      }
+      else { //folder and parse haven't done yet
+        path+=1;
+        deleteDirectory(path,result,i);
+      }
     }
-    findDirS(path,i,S);
-  }
-  else {
-    if(*path == '/') { //ketemu file sebelum parsenya berakhir
-      interrupt(0x21, 0, "Directory isn't Valid\r\n", 0, 0);
-      (*S) == 0xFFFF;
-      return;
+    else { //path == \r' parse done!
+      if(dir[i*16+1] != 0xFF) { //not a folder
+        printString("cannot remove : Target is not a folder");
+        return;
+      }
+      else { //valid folder with parent i
+        //iterating dir check is folder contains something?
+        for(j = 0;j<64;j++) {
+          if(dir[j*16] == i){ //folder contains something
+            break;
+          }
+        }
+        if(j==64) { //folder doesnt contains anything
+          clear(dir[i*16],16);
+          writeSector(dir,0x101);
+          writeSector(dir+512,0x102);
+          *result = 1;
+          return;
+        } else { //folder filled something
+          printString("cannot remove : Folder contains file!");
+          return;
+        }
+      }
     }
-    // (*S) = dir[i*16+1];
-    (*S) = 0xBBBB; //bukan dir
   }
 }
+

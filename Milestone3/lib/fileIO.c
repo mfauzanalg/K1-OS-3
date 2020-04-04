@@ -134,14 +134,13 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   writeSector(sector,0x103);
 }
 
-void deleteFile(char* path, int *result, char parentIndex){
+void deleteFile(char* path, char parentIndex){
   char map[512];
   char dir[1024];
   char sector[512];
   char temp[15];
   char S;
   int i,j,k,l;
-  int found;
 
   // read all sectors
   readSector(map,0x100);
@@ -153,38 +152,34 @@ void deleteFile(char* path, int *result, char parentIndex){
   // Target not found or target is a dir
   if (S == 0xFF){
     printString("cannot remove : Target is Dir or No such file");
-    *result = -1;
     return;
   }
 
   // Found
-  // Clear sector
+  // Clear Map
   for (j = 0; j < 16; j++){
-    sector[S*16 + j] = 0x00;
+    map[sector[S*16 + j]] = 0x00;
   }
+  // Clear sector
+  clear(sector[S*16], 16);
 
   // looking for dir indeks
-  i = 0; found = 0;
-  while (i < 64 && found == 0){
+  for (i = 0; i < 64; i++){
     if (i*16 +1 == S){
-      found = 1;
+      break;
     }
-    i++;
   }
+
   // i*16 adalah baris dimana file di simpan di dir
 
-  //clear dir and map
-  for (l = 0; l < 16; l++){
-    map[dir[i*16 + l]] = 0x00;
-    dir[i*16 + l] = 0x00;
-  }
+  //clear dir map
+  clear(dir[i*16], 16);
 
   // write hasil clear ke sectors
   writeSector(map,0x100);
   writeSector(dir,0x101);
   writeSector(dir+512,0x102);
   writeSector(sector,0x103);
-  *result = 1;
   return;
 }
 
