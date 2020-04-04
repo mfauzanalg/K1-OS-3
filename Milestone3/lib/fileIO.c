@@ -165,16 +165,17 @@ void deleteFile(char* path, char parentIndex){
   }
 
   // Found
-  // Clear Map
+  // Clear Map & sector
   for (j = 0; j < 16; j++){
-    map[sector[S*16 + j]] = 0x00;
+    if(sector[S*16+j] != 0) {
+      map[sector[S*16 + j]] = 0x00;
+      clear(sector[S*16+j]*512,512);
+      sector[S*16+j] = 0x00;
+    }
   }
-  // Clear sector
-  clear(sector[S*16], 16);
-
   // looking for dir indeks
   for (i = 0; i < 64; i++){
-    if (i*16 +1 == S){
+    if (dir[i*16 +1] == S){
       break;
     }
   }
@@ -182,7 +183,7 @@ void deleteFile(char* path, char parentIndex){
   // i*16 adalah baris dimana file di simpan di dir
 
   //clear dir map
-  clear(dir[i*16], 16);
+  clear(dir+i*16, 16);
 
   // write hasil clear ke sectors
   writeSector(map,0x100);
@@ -200,7 +201,7 @@ void findFileS(char* path, char parentIndex, int *S) {
   int k;
   k = 0;
   
-  for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {
+  for(i = 0; *path != '/' && *path != 0x00 && *path != '\r'; i++,path+=1) {
     temp[i] = *path;
     k++;
   }
