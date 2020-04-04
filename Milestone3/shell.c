@@ -84,6 +84,9 @@ int main (void) {
         else if(command[0]=='r' && command[1]=='m' && arg[0] != 0) {
             deleteFile(arg,currentDir);
         }
+        else if(command[0]=='c' && command[1]=='a' && command[2]=='t' && arg[0] != 0) {
+            cat(arg,currentDir);
+        }
         else if(command[0]=='m' && command[1]=='v' && arg[0] != 0 && arg2[0] != 0){
             mv(arg, arg2, currentDir, currentDir);
         }

@@ -248,3 +248,30 @@ void findFileS(char* path, char parentIndex, int *S) {
     (*S) = dir[i*16+1];
   }
 }
+void cat(char * path, char curDir) {
+  char map[512];
+  char dir[1024];
+  char sector[512];
+  char temp[15];
+  char S;
+  int i,j,k,l;
+
+  // read all sectors
+  readSector(map,0x100);
+  readSector(dir,0x101);
+  readSector(dir+512,0x102);
+  readSector(sector,0x103);
+
+  findFileS(path, curDir, &S);
+  // Target not found or target is a dir
+  if (S == 0xFF){
+    prnString("cannot remove : Target is Dir or No such file");
+    return;
+  }
+
+  for (j = 0; j < 16; j++){
+    if(sector[S*16+j] != 0) {
+      prnString(sector[S*16+j]*512);
+    }
+  }
+}
