@@ -55,20 +55,20 @@ int main (void) {
 
         interrupt(0x21,0x1,input,0,0);
         //input command
-        for(itr = 0,itr2 = 0; input[itr2] != ' ' && input[itr2] != '\r';itr++,itr2+=1) {
+        for(itr = 0,itr2 = 0; input[itr2] != ' ' && input[itr2] != 0;itr++,itr2+=1) {
             command[itr] = input[itr2];
         }
 
         if(input[itr2] != 0) {
             itr2++; //skip white space
-            for(itr = 0; input[itr2] != ' ' && input[itr2] != '\r'; itr++,itr2++) {
+            for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
                 arg[itr] = input[itr2];
             }
         }
 
         if(input[itr2] != 0) {
             itr2++; //skip white space
-            for(itr = 0; input[itr2] != ' ' && input[itr2] != '\r'; itr++,itr2++) {
+            for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
                 arg2[itr] = input[itr2];
             }
         }
@@ -363,8 +363,6 @@ void mv(char* src, char* dest, char srcParent, char destParent){
             printStr("b");
         }
     }
-    
-
     if (i == 64){
         printStr("\r\nNo such source file or directory\r\n");
         return;
@@ -372,8 +370,6 @@ void mv(char* src, char* dest, char srcParent, char destParent){
         printStr("\r\nNo such dest file or directory\r\n");
         return;
     }else{//ketemu
-        srcParent = i;
-        destParent = k;
         if (*src != 0 || *dest != '\r'){
             if(*src != 0){
                 src+=1;
@@ -381,9 +377,11 @@ void mv(char* src, char* dest, char srcParent, char destParent){
             if(*dest != '\r'){
                 dest+=1;
             }
-            mv(src, dest, srcParent, destParent);
+            mv(src, dest, i, k);
         }else{
-            dir[srcParent*16] = destParent;
+            dir[i*16] = k;
+            writeSector(dir,0x101);
+            writeSector(dir+512,0x102);
         }
     }
 }
