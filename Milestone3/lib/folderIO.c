@@ -67,15 +67,9 @@ void deleteDirectory(char *path, int *result, char parentIndex){
   char sector[512];
   int i,j;
   int length;
-  int succ;
   char temp[15];
   char S;
   int found;
-
-  readSector(map,0x100);
-  readSector(dir,0x101);
-  readSector(dir+512,0x102);
-  readSector(sector,0x103);
   //save filename and parse,
   for(i = 0;*path!='/' && *path != '\r';i++,path+=1) {
     temp[i] = *path;
@@ -83,33 +77,34 @@ void deleteDirectory(char *path, int *result, char parentIndex){
   length = i;
   //find it on dir
   for(i = 0;i<64;i++) {
+    //check dir with same parentFlag
     if(dir[i*16] == parentIndex) {
       for(j = 2; j<length+2 && dir[i*16+j] == temp[j-2];j++) {
       }
       if(j==length+2) {
-        //same
+        //same dir found
         break;
       }
     }
   }
-  if(i == 64) { //not founf
+  if(i == 64) { //not found then throw error
     printString("cannot remove : No Such Dir");
     return;
   }
-  else {
-    if(*path == '/') {
-      if(dir[i*16+1] != 0xFF) {
+  else { //found
+    if(*path == '/') { //parse haven't done yet
+      if(dir[i*16+1] != 0xFF) { //not a folder
         printString("cannot remove : Target is not a folder");
         return;
       }
-      else {
+      else { //folder and parse haven't done yet
         path+=1;
         deleteDirectory(path,result,i);
       }
     }
-    else { //path == \r'
-      if(dir[i*16+1] != 0xFF) {
-        printString("cannot remove : Target is Dir or No such file");
+    else { //path == \r' parse done!
+      if(dir[i*16+1] != 0xFF) { //not a folder
+        printString("cannot remove : Target is not a folder");
         return;
       }
       else { //valid folder with parent i
@@ -119,13 +114,13 @@ void deleteDirectory(char *path, int *result, char parentIndex){
             break;
           }
         }
-        if(j==64) {
+        if(j==64) { //folder doesnt contains anything
           clear(dir[i*16],16);
           writeSector(dir,0x101);
           writeSector(dir+512,0x102);
           *result = 1;
           return;
-        } else {
+        } else { //folder filled something
           printString("cannot remove : Folder contains file!");
           return;
         }
