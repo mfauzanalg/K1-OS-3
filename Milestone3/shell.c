@@ -79,7 +79,7 @@ int main (void) {
             mkdir(arg,currentDir);
         }
         else if(command[0]=='m' && command[1]=='v'){
-            mv(arg, arg2, 0xff, 0xff);
+            mv(arg, arg2, currentDir, currentDir);
         }
         else if (command[0] == 'l' && command[1] =='s') {
             //ls
