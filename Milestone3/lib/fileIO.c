@@ -1,4 +1,5 @@
 #include "fileIO.h"
+#include "teks.h"
 
 void readSector(char* buffer, int sector) 
 {
@@ -134,7 +135,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex) {
   writeSector(sector,0x103);
 }
 
-void deleteFile(char* path, int *result, char parenIndex){
+void deleteFile(char* path, int *result, char parentIndex){
   char map[512];
   char dir[1024];
   char sector[512];
@@ -148,15 +149,14 @@ void deleteFile(char* path, int *result, char parenIndex){
   readSector(dir+512,0x102);
   readSector(sector,0x103);
 
-  findFileS(path, parenIndex, &S);
+  findFileS(path, parentIndex, &S);
   //not found
   if (S == 0xFF){
+    printString("cannot remove : is a directory");
     *result = -1;
     return;
   }
   else{ //succ
-    //clear
-
     for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {  
       temp[i] = *path;
       k++;
@@ -164,7 +164,7 @@ void deleteFile(char* path, int *result, char parenIndex){
 
     for (i = 0; i < 64; i++){
       //get the parent dir of file
-      if (dir[i*16] == parenIndex){
+      if (dir[i*16] == parentIndex){
         //iterating and comparing filename
         for ( j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++){}
         //if same
@@ -206,7 +206,6 @@ void findFileS(char* path, char parentIndex, int *S) {
   k = 0;
   
   for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {
-    
     temp[i] = *path;
     k++;
   }
