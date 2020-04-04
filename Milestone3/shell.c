@@ -1,23 +1,16 @@
 //declare function
-// #include "lib/fileIO.h"
-// #include "lib/folderIO.h"
-// #include "lib/teks.h"
 
 int printStr(char* str);
 void getInput(char* buffer);
 void split(char* string, char splitter, char result[64][128], int *count);
-// void clear(char* bufffer, int size);
 void mv(char* src, char* dest, char srcParent, char destParent);
 int len(char* str);
 void printDir();
 void cd(char* path, char prevParent);
 void copyStr(char* str1, char* str2);
-// void readSector(char* buffer, int sector);
 void exeFile(char* dir,char* file,char* suc,char* newDir);
 void mkdir(char*path,char parent);
 void mv(char* src, char* dest, char srcParent, char destParent);
-// void rm(char* path, int* result,char parent);
-// void rmdir(char* path, int* result,char parent);
 
 //var global
 char dir[1024];
@@ -88,29 +81,7 @@ int main (void) {
             mv(arg, arg2, currentDir, currentDir);
         }
         else if (command[0] == 'l' && command[1] =='s') {
-            //ls
-            printStr("\r\n");
-            for(itr = 0; itr<64;itr++) {
-                if(dir[itr*16] == currentDir) {
-                    clear(filename,16);
-                    if(dir[itr*16+1] == 0xFF) { //folder
-                        filename[0] = '/';
-                        for(itr2 = 2;dir[itr*16+itr2] !=0;itr2++) {
-                            filename[itr2-1] = dir[itr*16+itr2]; 
-                        }
-                        printStr(filename);
-                        printStr("\t\t\t\t\t ");
-                    } else { //file
-                        for(itr2 = 2;dir[itr*16+itr2] !=0;itr2++) {
-                            filename[itr2-2] = dir[itr*16+itr2]; 
-                        }
-                        printStr(filename);
-                        printStr("\t\t\t\t\t ");
-                    }
-                }
-            }
-                printStr("\r\n");
-                printStr("\r\n");
+            listcontent(dir, filename, currentDir, itr, itr2);
         }
         
         else if(command[0] == '.' && command[1] == '/' && command[2]!=0) {
@@ -118,11 +89,6 @@ int main (void) {
             interrupt(0x21,currentDir << 8||0x06,file,segmentAvb*0x1000,&suc);
             segmentAvb++;
         }
-        // else if(command[0] == 'r' && command[1] == 'm' && command[2]!=0 && arg[0] != 0){
-        //     int result;
-        //     result = 0;
-        //     rm(arg, result, currentDir);
-        // }
         else if(command[0] == '0' && arg[0]==0) {
             file = &command[0];
             // char specialDir = 0x33;
@@ -146,15 +112,6 @@ int printStr(char* str) {
     interrupt(0x21,0,print,0,0);
 }
 
-// void writeSector(char* buffer, int sector) {
-//     interrupt(0x21,0x0003,buffer,sector,0);
-// }
-
-// void readSector(char* buffer, int sector) {
-//     interrupt(0x21,0x0002,buffer,sector,0);
-// }
-
-
 void printDir() {
     char printedParent;
     char cDir[16];
@@ -176,14 +133,6 @@ void getInput(char* buffer) {
     interrupt(0x21,0x0001,buffer,0,0);
 }
 
-
-// void clear(char* bufffer, int size) {
-//     int i;
-//     for ( i = 0; i < size; i++)
-//     {
-//         *(bufffer+i) = 0;
-//     }
-// }
 
 void split(char* string, char splitter, char result[64][128], int *count){ 
     int i,j,k;  //string[i], result[j][k]
@@ -473,12 +422,5 @@ void mkdir(char* path, char parent) {
     }
 }
 
-
-// void rm(char* path, int* result, char parent){
-//     deleteFile(path, result, parent);
-// }
-// void rmdir(char* path, int* result,char parent){
-//     deleteDirectory(path, result, parent);
-// }
 
 
