@@ -6,13 +6,13 @@
 int printStr(char* str);
 void getInput(char* buffer);
 void split(char* string, char splitter, char result[64][128], int *count);
-void clear(char* bufffer, int size);
+// void clear(char* bufffer, int size);
 void mv(char* src, char* dest, char srcParent, char destParent);
 int len(char* str);
 void printDir();
 void cd(char* path, char prevParent);
 void copyStr(char* str1, char* str2);
-void readSector(char* buffer, int sector);
+// void readSector(char* buffer, int sector);
 void exeFile(char* dir,char* file,char* suc,char* newDir);
 void mkdir(char*path,char parent);
 void mv(char* src, char* dest, char srcParent, char destParent);
@@ -78,6 +78,9 @@ int main (void) {
         else if(command[0]=='m' && command[1]=='k' && command[2]=='d' && command[3]=='i' && command[4]=='r' && arg[0] != 0) {
             mkdir(arg,currentDir);
         }
+        else if(command[0]=='r' && command[1]=='m' && command[2]=='d' && command[3]=='i' && command[4]=='r' && arg[0] != 0) {
+            deleteDirectory(arg, &suc, currentDir);
+        }
         else if(command[0]=='m' && command[1]=='v' && arg[0] != 0 && arg2[0] != 0){
             mv(arg, arg2, currentDir, currentDir);
         }
@@ -140,13 +143,13 @@ int printStr(char* str) {
     interrupt(0x21,0,print,0,0);
 }
 
-void writeSector(char* buffer, int sector) {
-    interrupt(0x21,0x0003,buffer,sector,0);
-}
+// void writeSector(char* buffer, int sector) {
+//     interrupt(0x21,0x0003,buffer,sector,0);
+// }
 
-void readSector(char* buffer, int sector) {
-    interrupt(0x21,0x0002,buffer,sector,0);
-}
+// void readSector(char* buffer, int sector) {
+//     interrupt(0x21,0x0002,buffer,sector,0);
+// }
 
 
 void printDir() {
@@ -171,13 +174,13 @@ void getInput(char* buffer) {
 }
 
 
-void clear(char* bufffer, int size) {
-    int i;
-    for ( i = 0; i < size; i++)
-    {
-        *(bufffer+i) = 0;
-    }
-}
+// void clear(char* bufffer, int size) {
+//     int i;
+//     for ( i = 0; i < size; i++)
+//     {
+//         *(bufffer+i) = 0;
+//     }
+// }
 
 void split(char* string, char splitter, char result[64][128], int *count){ 
     int i,j,k;  //string[i], result[j][k]

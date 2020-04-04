@@ -1,8 +1,7 @@
 #ifndef _FILEIO_H_
 #define _FILEIO_H_
 
-#include "teks.h"
-
+void prnString(char *string);
 void readSector(char* buffer, int sector);
 void writeSector(char* buffer, int sector);
 void clear(char *buffer, int length);

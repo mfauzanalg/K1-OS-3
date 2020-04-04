@@ -1,5 +1,14 @@
 #include "fileIO.h"
 
+void prnString(char *string) {
+  int i = 0;
+  while (*(string+i)!='\0')
+  {
+    interrupt(16,0XE00 + *(string+i),0,0,0); //using vector table 10h and using 0Eh
+    i++;
+  }
+}
+
 void readSector(char* buffer, int sector) 
 {
   interrupt(0x13, 0x201, buffer, div(sector, 36) * 0x100 + mod(sector, 18) + 1, mod(div(sector, 18), 2) * 0x100);
@@ -151,7 +160,7 @@ void deleteFile(char* path, char parentIndex){
   findFileS(path, parentIndex, &S);
   // Target not found or target is a dir
   if (S == 0xFF){
-    printString("cannot remove : Target is Dir or No such file");
+    prnString("cannot remove : Target is Dir or No such file");
     return;
   }
 
