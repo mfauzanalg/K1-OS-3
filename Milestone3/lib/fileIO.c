@@ -179,7 +179,6 @@ void deleteFile(char* path, char parentIndex){
       break;
     }
   }
-
   // i*16 adalah baris dimana file di simpan di dir
 
   //clear dir map

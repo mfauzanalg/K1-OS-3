@@ -136,3 +136,27 @@ void deleteDirectory(char *path, int *result, char parentIndex){
   }
 }
 
+void listcontent(char* dir, char* filename, char currentDir, int itr, int itr2){
+  prnStr("\r\n");
+  for(itr = 0; itr<64;itr++) {
+      if(dir[itr*16] == currentDir) {
+          clear(filename,16);
+          if(dir[itr*16+1] == 0xFF) { //folder
+              filename[0] = '/';
+              for(itr2 = 2;dir[itr*16+itr2] !=0;itr2++) {
+                  filename[itr2-1] = dir[itr*16+itr2]; 
+              }
+              prnStr(filename);
+              prnStr("\t\t\t\t\t ");
+          } else { //file
+              for(itr2 = 2;dir[itr*16+itr2] !=0;itr2++) {
+                  filename[itr2-2] = dir[itr*16+itr2]; 
+              }
+              prnStr(filename);
+              prnStr("\t\t\t\t\t ");
+          }
+      }
+  }
+      prnStr("\r\n");
+      prnStr("\r\n");
+}
