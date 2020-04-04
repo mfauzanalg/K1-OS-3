@@ -10,6 +10,7 @@ void copyStr(char* str1, char* str2);
 void readSector(char* buffer, int sector);
 void exeFile(char* dir,char* file,char* suc,char* newDir);
 void mkdir(char*path,char parent);
+void mv(char* src, char* dest, char srcParent, char destParent);
 //var global
 char dir[1024];
 char input[128];
@@ -38,6 +39,7 @@ int main (void) {
         clear(input,128);
         clear(command,128);
         clear(arg,128);
+        clear(arg2,128);
         curParent = currentDir;
 
         printDir();
@@ -62,12 +64,14 @@ int main (void) {
                 arg2[itr] = input[itr2];
             }
         }
-
         if(command[0]=='c' && command[1]=='d' && arg[0] != 0) {
             cd(arg,currentDir);
         }
         else if(command[0]=='m' && command[1]=='k' && command[2]=='d' && command[3]=='i' && command[4]=='r' && arg[0] != 0) {
             mkdir(arg,currentDir);
+        }
+        else if(command[0]=='m' && command[1]=='v'){
+            mv(arg, arg2, 0xff, 0xff);
         }
         else if (command[0] == 'l' && command[1] =='s') {
             //ls
@@ -283,9 +287,11 @@ void exeFile(char* dir,char* file,char* suc, char* newDir) {
 }
 
 void mv(char* src, char* dest, char srcParent, char destParent){
-    int i, j, k;
+    int i, j, k, l;
     int lengthsrc;
     int lengthdest;
+    int check;
+    int check1;
     char np[16];
     char np2[16];
     clear(np2, 16);
@@ -293,43 +299,60 @@ void mv(char* src, char* dest, char srcParent, char destParent){
     i = 0;
     lengthsrc = 0;
     lengthdest = 0;
+    if(*src != 0){
+        for (i = 0; *src != 0; i++,src+=1){
+            np[i] = *src;
+        }
+        lengthsrc = i;
 
-    for (i = 0; *src != '/' && *src != '\r'; i++,src+=1){
-        np[i] = *src;
-    }
-    lengthsrc = i;
-    
-    for (i = 0; *dest != '/' && *dest != '\r'; i++, dest+=1){
-        np2[i] = *dest;
-    }
-    lengthdest = i;
-    
-    for ( i = 0; i < 64; i++){
-        //get the parent dir of file
-        if (dir[i*16] == srcParent){
-            //iterating and comparing filename
-            for (j = 2; j < lengthsrc+2 && dir[i*16+j] == np[j-2]; j++){
-            }
-            //if same
-            if (j == lengthsrc+2){
-                break;
-            //else continue iterating i
+        for ( i = 0; i < 64; i++){
+            //get the parent dir of file
+            if (dir[i*16] == srcParent){
+                //iterating and comparing filename
+                for (j = 2; j < lengthsrc+2 && dir[i*16+j] == np[j-2]; j++){
+                }
+                //if same
+                if (j == lengthsrc+2){
+                    break;
+                //else continue iterating i
+                }
             }
         }
-    }
-    for ( k = 0; k < 64; k++){
-        //get the parent dir of file
-        if (dir[k*16] == srcParent){
-            //iterating and comparing filename
-            for (j = 2; j < lengthsrc+2 && dir[i*16+j] == np[j-2]; j++){
-            }
-            //if same
-            if (j == lengthsrc+2){
-                break;
-            //else continue iterating i
-            }
+        if(i==64){
+            printStr("A");
+        }else{
+            printStr("B");
         }
     }
+        
+    if(*dest != '/' && *dest != '\r'){
+        for (l = 0; *dest != '/' && *dest != '\r'; l++, dest+=1){
+                np2[l] = *dest;
+        }
+        lengthdest = l;
+            
+
+        for ( k = 0; k < 64; k++){
+            //get the parent dir of file
+            if (dir[k*16] == destParent){
+                //iterating and comparing filename
+                for (j = 2; j < lengthdest+2 && dir[k*16+j] == np2[j-2]; j++){
+                }
+                //if same
+                if (j == lengthdest+2){
+                    break;
+                //else continue iterating k
+                }
+            }
+        }
+        if(k==64){
+            printStr("a");
+        }else{
+            printStr("b");
+        }
+    }
+    
+
     if (i == 64){
         printStr("\r\nNo such source file or directory\r\n");
         return;
@@ -339,8 +362,8 @@ void mv(char* src, char* dest, char srcParent, char destParent){
     }else{//ketemu
         srcParent = i;
         destParent = k;
-        if (*src !='\r' || *dest != '\r'){
-            if(*src != '\r'){
+        if (*src != 0 || *dest != '\r'){
+            if(*src != 0){
                 src+=1;
             }
             if(*dest != '\r'){
@@ -348,7 +371,7 @@ void mv(char* src, char* dest, char srcParent, char destParent){
             }
             mv(src, dest, srcParent, destParent);
         }else{
-            dir[destParent*16] = dir[srcParent*16];
+            dir[srcParent*16] = destParent;
         }
     }
 }
