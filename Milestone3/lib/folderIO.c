@@ -1,5 +1,12 @@
 #include "folderIO.h"
-
+void prnStr(char *string) {
+  int i = 0;
+  while (*(string+i)!='\0')
+  {
+    interrupt(16,0XE00 + *(string+i),0,0,0); //using vector table 10h and using 0Eh
+    i++;
+  }
+}
 
 void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) {
   char dir[1024];
@@ -88,13 +95,13 @@ void deleteDirectory(char *path, int *result, char parentIndex){
     }
   }
   if(i == 64) { //not found then throw error
-    printString("cannot remove : No Such Dir");
+    prnStr("cannot remove : No Such Dir");
     return;
   }
   else { //found
     if(*path == '/') { //parse haven't done yet
       if(dir[i*16+1] != 0xFF) { //not a folder
-        printString("cannot remove : Target is not a folder");
+        prnStr("cannot remove : Target is not a folder");
         return;
       }
       else { //folder and parse haven't done yet
@@ -104,7 +111,7 @@ void deleteDirectory(char *path, int *result, char parentIndex){
     }
     else { //path == \r' parse done!
       if(dir[i*16+1] != 0xFF) { //not a folder
-        printString("cannot remove : Target is not a folder");
+        prnStr("cannot remove : Target is not a folder");
         return;
       }
       else { //valid folder with parent i
@@ -121,7 +128,7 @@ void deleteDirectory(char *path, int *result, char parentIndex){
           *result = 1;
           return;
         } else { //folder filled something
-          printString("cannot remove : Folder contains file!");
+          prnStr("cannot remove : Folder contains file!");
           return;
         }
       }
