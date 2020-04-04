@@ -61,101 +61,60 @@ void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) 
   }
 }
 
-void deleteDirectory(char *path, int *success, char parentIndex){
+void deleteDirectory(char *path, int *result, char parentIndex){
   char map[512];
   char dir[1024];
   char sector[512];
-  int i,j,k,l;
+  int i,j;
   int succ;
   char temp[15];
   char S;
+  int found;
 
   readSector(map,0x100);
   readSector(dir,0x101);
   readSector(dir+512,0x102);
   readSector(sector,0x103);
 
+  findDirS(path, parentIndex, &S);
 
+  // Target not found or target is a dir
+  if (S == 0xFFFF){
+    printString("cannot remove : No such file");
+    *result = -1;
+    return;
+  }
+  if (S == 0xBBBB){
+    printString("cannot remove : Target is not Dir");
+    *result = -1;
+    return;
+  }
+  //S adalah indeks dari folder (di dir) 
 
+  // Found
+  // Cari tau apakah folder kosong atau tidak
+  for (i = 0; i < 64; i++){
+    // Dir is not empty
+    if (dir[16*i] == S){
+      printString("cannot remove : Dir is not empty");
+      return;
+    }
+    // else Dir is empty
+  }
 
-  // succ = 1;
-  // j = 0;
-  // for(i = 0; *path != '/' && *path != 0x00; i++,path+=1){  
-  //   temp[i] = *path;
-  //   k++;
-  // }
+  //clear dir and map
+  for (j = 0; j < 16; j++){
+    map[dir[S*16 + j]] = 0x00;
+    dir[S*16 + j] = 0x00;
+  }
 
-  // for (i = 0; i < 64; i++){
-  //   //get the parent dir of file
-  //   if (dir[i*16] == parentIndex){
-  //     //iterating and comparing filename
-  //     for (j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++){}
-  //     //if same
-  //     if(j == k+2) {
-  //       break;
-  //     }
-  //     //else continue iterating i
-  //   }
-  // }
-
-  // // Target not found
-  // if(i == 64) {
-  //   printString("cannot remove : No such file");
-  //   return;
-  // }
-  // // Found
-  // findFileS(path, parentIndex, &S);
-  // if (S != 0xFF){
-  //   printString("cannot remove : target is not a directory");
-  //   return;
-  // }
-
-  // findFileS(path, parentIndex, &S);
-
-  // if (S != 0xFF){
-  //   printString("failed to remove : Not a directory");
-  //   *success = -1;
-  //   return;
-  // }
-
-  // succ = 1;
-  // j = 0;
-  // for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {  
-  //     temp[i] = *path;
-  //     k++;
-  //   }
-
-  // for (i = 0; i < 64; i++){
-  //   //get the parent dir of file
-  //   if (dir[i*16] == parentIndex){
-  //     //iterating and comparing filename
-  //     for (j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++){}
-  //     //if same
-  //     if(j == k+2) {
-  //       break;
-  //     }
-  //     //else continue iterating i
-  //   }
-  // }
-
-  // //folder ada di baris ke [i*16] <- ini adalah indeks foler di dir
-  // while (j < 64 && succ){
-  //   if (dir[j*16 + 1] == dir[i*16]){ // kalau ada file/folder di dalam folder yang ingin dihapus
-  //     succ = -1;
-  //   }
-  //   j++;
-  // }
-
-  // if (succ == -1){
-  //   printString("failed to remove : Directory not empty");
-  //   *success = -1;
-  //   return;
-  // }
-
-  // if (j == 64){   // berarti si foldernya kosong bisa dihapus
-    
-  // }
-
+  // write hasil clear ke sectors
+  writeSector(map,0x100);
+  writeSector(dir,0x101);
+  writeSector(dir+512,0x102);
+  writeSector(sector,0x103);
+  *result = 1;
+  return;
 }
 
 
@@ -171,7 +130,6 @@ void findDirS(char* path, char parentIndex, int *S) {
     temp[i] = *path;
     k++;
   }
-  path++;
   //read dir Sectors
   readSector(dir,0x101);
   readSector(dir+512,0x102);
@@ -203,9 +161,20 @@ void findDirS(char* path, char parentIndex, int *S) {
   //found and i*16 is the address
   if(dir[i*16+1] == 0xFF) {
     //continue search S
-    findFileS(path,i,S);
+    path+=1;
+    if (*path == 0x00){ //path udh abis
+      *S = i;
+      return;
+    }
+    findDirS(path,i,S);
   }
   else {
-    (*S) = dir[i*16+1];
+    if(*path == '/') { //ketemu file sebelum parsenya berakhir
+      interrupt(0x21, 0, "Directory isn't Valid\r\n", 0, 0);
+      (*S) == 0xFFFF;
+      return;
+    }
+    // (*S) = dir[i*16+1];
+    (*S) = 0xBBBB; //bukan dir
   }
 }
