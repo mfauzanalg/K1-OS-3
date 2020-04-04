@@ -277,3 +277,110 @@ void cat(char * path, char curDir) {
     }
   }
 }
+// void cp(char* src, char* dest, char srcParent, char destParent) {
+//     int i, j, k, l;
+//     char SectorIndex;
+//     char bufferTemp[8192];
+//     int lengthsrc;
+//     int lengthdest;
+//     int check;
+//     int check1;
+//     char np[16];
+//     char np2[16];
+//     clear(np2, 16);
+//     clear(np,16);
+//     clear(bufferTemp,8192);
+//     i = 0;
+//     lengthsrc = 0;
+//     lengthdest = 0;
+//     check1 = 0;
+//     check = 0;
+    
+//     if(*src == 'r' && *(src+1) == 'o' && *(src+2) == 'o' && *(src+3) == 't'){
+//         srcParent = 0xff;
+//     }
+//     if(*src != 0 && *src != '/'){
+//         for (i = 0; *src != 0 && *src != '/'; i++,src+=1){
+//             np[i] = *src;
+//         }
+//         lengthsrc = i;
+//         if(np[0] == 'r' && np[1] == 'o' && np[2] == 'o' && np[3] == 't'){
+//             srcParent = 0xff;
+//         }else{
+//             for ( i = 0; i < 64; i++){
+//             //get the parent dir of file
+//                 if (dir[i*16] == srcParent){
+//                     //iterating and comparing filename
+//                     for (j = 2; j < lengthsrc+2 && dir[i*16+j] == np[j-2]; j++){
+//                     }
+//                     //if same
+//                     if (j == lengthsrc+2){
+//                         break;
+//                     //else continue iterating i
+//                     }
+//                 }
+//             }
+//             check = 1;
+//         }
+//     }
+    
+//     if(*dest != '/' && *dest != '\r'){
+//         for (l = 0; *dest != '/' && *dest != '\r'; l++, dest+=1){
+//             np2[l] = *dest;
+//         }
+//         lengthdest = l;
+//         if(np2[0] == 'r' && np2[1] == 'o' && np2[2] == 'o' && np2[3] == 't'){
+//             destParent = 0xff;
+//         }else{
+//             for ( k = 0; k < 64; k++){
+//                 //get the parent dir of file
+//                 if (dir[k*16] == destParent){
+//                     //iterating and comparing filename
+//                     for (j = 2; j < lengthdest+2 && dir[k*16+j] == np2[j-2]; j++){
+//                     }
+//                     //if same
+//                     if (j == lengthdest+2){
+//                         break;
+//                     //else continue iterating k
+//                     }
+//                 }
+//             }
+//             check1 = 1; 
+//         }
+//     }
+//     if (i == 64){
+//         printStr("\r\nNo such source file or directory\r\n");
+//         return;
+//     }else if( k == 64){
+//         printStr("\r\nNo such dest file or directory\r\n");
+//         return;
+//     }else{//ketemu
+//         if(check == 1){
+//             srcParent = i;
+//         }
+//         if(check1 == 1){
+//             destParent = k;
+//         }
+        
+//         if (*src != 0 || *dest != '\r'){
+//             if(*src != 0){
+//                 src+=1;
+//             }
+//             if(*dest != '\r'){
+//                 dest+=1;
+//             }
+//             cp(src, dest, srcParent, destParent);
+//         }else{
+//             SectorIndex = dir[srcParent*16+1];
+//             for(i=0;i<16&&sector[SectorIndex*16+i] != 0;i++) {
+//                 readSector(bufferTemp+i*512,sector[SectorIndex*16+i]);
+//             }
+//             k = i;
+//             writeFile(bufferTemp,np,k,destParent);
+//             writeSector(dir,0x101);
+//             writeSector(dir+512,0x102);
+//             writeSector(sector,0x103);
+//             writeSector(map,0x100);
+//         }
+//     }    
+// }

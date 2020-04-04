@@ -32,6 +32,7 @@ int main (void) {
     char arg[128];
     char arg2[128];
     char filename[16];
+
     int suc;
     while (1)
     {
@@ -424,6 +425,4 @@ void mkdir(char* path, char parent) {
         }
     }
 }
-
-
 

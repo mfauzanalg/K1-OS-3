@@ -10,5 +10,6 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex);
 void deleteFile(char* path,  char parentIndex);
 void findFileS(char* path, char parentIndex, int *S);
 void cat(char * path, char curDir);
+// void cp(char* src, char* dest, char srcParent, char destParent);
 
 #endif
