@@ -273,6 +273,7 @@ void cat(char * path, char curDir) {
     if(sector[S*16+j] != 0) {
       readSector(tempSec,sector[S*16+j]);
       prnString(tempSec);
+      prnString("\r\n");
     }
   }
 }
