@@ -93,13 +93,13 @@ void deleteDirectory(char *path, int *result, char parentIndex){
     }
   }
   if(i == 64) { //not founf
-    printString("cannot remove : Target is Dir or No such file");
+    printString("cannot remove : No Such Dir");
     return;
   }
   else {
     if(*path == '/') {
       if(dir[i*16+1] != 0xFF) {
-        printString("cannot remove : Target is Dir or No such file");
+        printString("cannot remove : Target is not a folder");
         return;
       }
       else {
