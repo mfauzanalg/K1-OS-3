@@ -1,5 +1,5 @@
 #include "folderIO.h"
-#include "teks.h"
+
 
 void writeDir(char *path, int *sectors, char parentIndex, int* nLength,char* P) {
   char dir[1024];

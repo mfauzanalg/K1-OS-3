@@ -1,5 +1,4 @@
 #include "fileIO.h"
-#include "teks.h"
 
 void readSector(char* buffer, int sector) 
 {
