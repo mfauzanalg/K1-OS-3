@@ -1,5 +1,4 @@
 #include "fileIO.h"
-#include "teks.h"
 
 void readSector(char* buffer, int sector) 
 {
@@ -142,6 +141,7 @@ void deleteFile(char* path, int *result, char parentIndex){
   char temp[15];
   char S;
   int i,j,k,l;
+  int found;
 
   // read all sectors
   readSector(map,0x100);
@@ -150,51 +150,42 @@ void deleteFile(char* path, int *result, char parentIndex){
   readSector(sector,0x103);
 
   findFileS(path, parentIndex, &S);
-  //not found
+  // Target not found or target is a dir
   if (S == 0xFF){
-    printString("cannot remove : is a directory");
+    printString("cannot remove : Target is Dir or No such file");
     *result = -1;
     return;
   }
-  else{ //succ
-    for(i = 0; *path != '/' && *path != 0x00; i++,path+=1) {  
-      temp[i] = *path;
-      k++;
-    }
 
-    for (i = 0; i < 64; i++){
-      //get the parent dir of file
-      if (dir[i*16] == parentIndex){
-        //iterating and comparing filename
-        for ( j = 2; j < k+2 && dir[i*16+j] == temp[j-2]; j++){}
-        //if same
-        if(j == k+2) {
-          break;
-        }
-        //else continue iterating i
-      }
-    }
-
-    //clear sector
-    for (l = 0; l < 16; l++){
-      sector[S*16 + l] = 0x00;
-    }
-
-    //clear dir and map
-    for (l = 0; l < 16; l++){
-      map[dir[i*16 + l]] = 0x00;
-      dir[i*16 + l] = 0x00;
-    }
-
-    // write hasil clear ke sectors
-    writeSector(map,0x100);
-    writeSector(dir,0x101);
-    writeSector(dir+512,0x102);
-    writeSector(sector,0x103);
-    *result = 1;
-    return;
+  // Found
+  // Clear sector
+  for (j = 0; j < 16; j++){
+    sector[S*16 + j] = 0x00;
   }
 
+  // looking for dir indeks
+  i = 0; found = 0;
+  while (i < 64 && found == 0){
+    if (i*16 +1 == S){
+      found = 1;
+    }
+    i++;
+  }
+  // i*16 adalah baris dimana file di simpan di dir
+
+  //clear dir and map
+  for (l = 0; l < 16; l++){
+    map[dir[i*16 + l]] = 0x00;
+    dir[i*16 + l] = 0x00;
+  }
+
+  // write hasil clear ke sectors
+  writeSector(map,0x100);
+  writeSector(dir,0x101);
+  writeSector(dir+512,0x102);
+  writeSector(sector,0x103);
+  *result = 1;
+  return;
 }
 
 void findFileS(char* path, char parentIndex, int *S) {
@@ -209,7 +200,6 @@ void findFileS(char* path, char parentIndex, int *S) {
     temp[i] = *path;
     k++;
   }
-  path++;
   //read dir Sectors
   readSector(dir,0x101);
   readSector(dir+512,0x102);
@@ -241,9 +231,15 @@ void findFileS(char* path, char parentIndex, int *S) {
   //found and i*16 is the address
   if(dir[i*16+1] == 0xFF) {
     //continue search S
+    path+=1;
     findFileS(path,i,S);
   }
   else {
+    if(*path == '/') { //ketemu file sebelum parsenya berakhir
+      interrupt(0x21, 0, "Directory isn't Valid\r\n", 0, 0);
+      (*S) == 0xFF;
+      return;
+    }
     (*S) = dir[i*16+1];
   }
 }

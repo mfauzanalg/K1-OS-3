@@ -1,8 +1,13 @@
 //declare function
+// #include "lib/fileIO.h"
+// #include "lib/folderIO.h"
+// #include "lib/teks.h"
+
 int printStr(char* str);
 void getInput(char* buffer);
 void split(char* string, char splitter, char result[64][128], int *count);
 void clear(char* bufffer, int size);
+void mv(char* src, char* dest, char srcParent, char destParent);
 int len(char* str);
 void printDir();
 void cd(char* path, char prevParent);
@@ -11,6 +16,9 @@ void readSector(char* buffer, int sector);
 void exeFile(char* dir,char* file,char* suc,char* newDir);
 void mkdir(char*path,char parent);
 void mv(char* src, char* dest, char srcParent, char destParent);
+// void rm(char* path, int* result,char parent);
+// void rmdir(char* path, int* result,char parent);
+
 //var global
 char dir[1024];
 char input[128];
@@ -47,20 +55,20 @@ int main (void) {
 
         interrupt(0x21,0x1,input,0,0);
         //input command
-        for(itr = 0,itr2 = 0; input[itr2] != ' ' && input[itr2]!=0;itr++,itr2+=1) {
+        for(itr = 0,itr2 = 0; input[itr2] != ' ' && input[itr2] != '\r';itr++,itr2+=1) {
             command[itr] = input[itr2];
         }
 
         if(input[itr2] != 0) {
             itr2++; //skip white space
-            for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
+            for(itr = 0; input[itr2] != ' ' && input[itr2] != '\r'; itr++,itr2++) {
                 arg[itr] = input[itr2];
             }
         }
 
         if(input[itr2] != 0) {
             itr2++; //skip white space
-            for(itr = 0; input[itr2] != ' ' && input[itr2] != 0; itr++,itr2++) {
+            for(itr = 0; input[itr2] != ' ' && input[itr2] != '\r'; itr++,itr2++) {
                 arg2[itr] = input[itr2];
             }
         }
@@ -104,12 +112,16 @@ int main (void) {
             interrupt(0x21,currentDir << 8||0x06,file,segmentAvb*0x1000,&suc);
             segmentAvb++;
         }
-        else if( command[0] == '0' && arg[0]==0) {
+        // else if(command[0] == 'r' && command[1] == 'm' && command[2]!=0 && arg[0] != 0){
+        //     int result;
+        //     result = 0;
+        //     rm(arg, result, currentDir);
+        // }
+        else if(command[0] == '0' && arg[0]==0) {
             file = &command[0];
             // char specialDir = 0x33;
             interrupt(0x21,0x33 << 8 || 0x06,file,segmentAvb*0x1000,&suc);
             segmentAvb++;
-            
         }
         else {
             printStr("\r\nInvalid Command \r\n");
@@ -445,5 +457,14 @@ void mkdir(char* path, char parent) {
             writeSector(dir+512,0x102);
         }
     }
-   
 }
+
+
+// void rm(char* path, int* result, char parent){
+//     deleteFile(path, result, parent);
+// }
+// void rmdir(char* path, int* result,char parent){
+//     deleteDirectory(path, result, parent);
+// }
+
+
