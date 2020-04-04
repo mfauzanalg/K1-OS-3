@@ -78,8 +78,8 @@ int main (void) {
         else if(command[0]=='m' && command[1]=='k' && command[2]=='d' && command[3]=='i' && command[4]=='r' && arg[0] != 0) {
             mkdir(arg,currentDir);
         }
-        else if(command[0]=='m' && command[1]=='v'){
-            mv(arg, arg2, 0xff, 0xff);
+        else if(command[0]=='m' && command[1]=='v' && arg[0] != 0 && arg2[0] != 0){
+            mv(arg, arg2, currentDir, currentDir);
         }
         else if (command[0] == 'l' && command[1] =='s') {
             //ls
@@ -311,8 +311,10 @@ void mv(char* src, char* dest, char srcParent, char destParent){
     i = 0;
     lengthsrc = 0;
     lengthdest = 0;
-    if(*src != 0){
-        for (i = 0; *src != 0; i++,src+=1){
+    check1 = 0;
+    check = 0;
+    if(*src != 0 && *src != '/'){
+        for (i = 0; *src != 0 && *src != '/'; i++,src+=1){
             np[i] = *src;
         }
         lengthsrc = i;
@@ -335,15 +337,15 @@ void mv(char* src, char* dest, char srcParent, char destParent){
         }else{
             printStr("B");
         }
+        check = 1;
     }
         
     if(*dest != '/' && *dest != '\r'){
         for (l = 0; *dest != '/' && *dest != '\r'; l++, dest+=1){
-                np2[l] = *dest;
+            np2[l] = *dest;
         }
         lengthdest = l;
             
-
         for ( k = 0; k < 64; k++){
             //get the parent dir of file
             if (dir[k*16] == destParent){
@@ -362,6 +364,7 @@ void mv(char* src, char* dest, char srcParent, char destParent){
         }else{
             printStr("b");
         }
+        check1 = 1;
     }
     if (i == 64){
         printStr("\r\nNo such source file or directory\r\n");
@@ -370,6 +373,13 @@ void mv(char* src, char* dest, char srcParent, char destParent){
         printStr("\r\nNo such dest file or directory\r\n");
         return;
     }else{//ketemu
+        if(check == 1){
+            srcParent = i;
+        }
+        if(check1 == 1){
+            destParent = k;
+        }
+        
         if (*src != 0 || *dest != '\r'){
             if(*src != 0){
                 src+=1;
@@ -377,9 +387,9 @@ void mv(char* src, char* dest, char srcParent, char destParent){
             if(*dest != '\r'){
                 dest+=1;
             }
-            mv(src, dest, i, k);
+            mv(src, dest, srcParent, destParent);
         }else{
-            dir[i*16] = k;
+            dir[srcParent*16] = destParent;
             writeSector(dir,0x101);
             writeSector(dir+512,0x102);
         }
